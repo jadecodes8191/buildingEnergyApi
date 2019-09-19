@@ -13,6 +13,7 @@ start_time = time.time()
 #   - Facility
 #   - Instance ID of electric meter
 df = pd.read_csv( '../csv/aps_power.csv' )
+df = df.sort_values(by='Label', ascending=True)
 
 # Iterate over dataframe, getting values for each row
 for index, row in df.iterrows():
