@@ -12,7 +12,7 @@ start_time = time.time()
 #   - Label
 #   - Facility
 #   - Instance ID of electric meter
-df = pd.read_csv( '../csv/ahs_power.csv' )
+df = pd.read_csv('ahs_power.csv' )
 
 # Initialize empty bulk request
 bulk_rq = []
