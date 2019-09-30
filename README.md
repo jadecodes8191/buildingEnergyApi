@@ -1,5 +1,10 @@
-# buildingEnergyApi
+# Building Energy API
 
-Energize Andover Building Energy API -- Jade
+This is the home of the code for my work with Energize Andover! (forked from the original Energize repo)
 
-For now, I'm just seeing what I can do with this data!
+Main files to take a look at:
+
+- ahs_air.py and all related CSV files -- 
+  - This system uses schoolwide sensors to get temperature and CO2 data, which it then writes to a temporary CSV file (ahs_air_data). 
+  - Next, it reads in the file using Pandas, and based on set values, it determines which rooms have high/low temperatures or high carbon dioxide. 
+  - Finally, it writes these rooms and their values to more permanent CSV files (ahs_warm_data, ahs_carbon_data, ahs_cold_data), which in this fork are empty.
