@@ -5,7 +5,6 @@ import pandas as pd
 from building_data_requests import get_bulk
 import numbers
 import csv
-from crontab import CronTab
 
 start_time = time.time()
 
@@ -20,7 +19,7 @@ co2_max = 1200
 #   - Facility
 #   - Instance ID of CO2 sensor
 #   - Instance ID of temperature sensor
-df = pd.read_csv( 'ahs_air.csv', na_filter=False, comment='#' )
+df = pd.read_csv('/media/ea/Data/Students/jade/buildingEnergyApi/csv/ahs_air.csv', na_filter=False, comment='#' )
 
 # Initialize empty bulk request
 bulk_rq = []
