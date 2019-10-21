@@ -79,3 +79,29 @@ with open('ahs_air_data.csv', mode='w') as ahs_air_data:
         #instead of printing, uses writerow method to enter into the csv file
 
 ahs_air_data.close()
+
+'''
+terminal commands:
+
+39 7 * * * python Data/Students/jade/buildingEnergyApi/problemareascron.py >> ahs_air_data.csv
+39 7 * * * python Data/Students/jade/buildingEnergyApi/cold_rooms.py >> ahs_cold_data.csv     
+39 7 * * * python Data/Students/jade/buildingEnergyApi/warm_rooms.py >> ahs_warm_data.csv     
+39 7 * * * python Data/Students/jade/buildingEnergyApi/carbon_rooms.py >> ahs_carbon_data.csv 
+
+0 10 * * * python Data/Students/jade/buildingEnergyApi/problemareascron.py >> ahs_air_data.csv
+0 10 * * * python Data/Students/jade/buildingEnergyApi/cold_rooms.py >> ahs_cold_data.csv     
+0 10* * * python Data/Students/jade/buildingEnergyApi/warm_rooms.py >> ahs_warm_data.csv     
+0 10 * * * python Data/Students/jade/buildingEnergyApi/carbon_rooms.py >> ahs_carbon_data.csv 
+
+0 12 * * * python Data/Students/jade/buildingEnergyApi/problemareascron.py >> ahs_air_data.csv
+0 12 * * * python Data/Students/jade/buildingEnergyApi/cold_rooms.py >> ahs_cold_data.csv     
+0 12 * * * python Data/Students/jade/buildingEnergyApi/warm_rooms.py >> ahs_warm_data.csv     
+0 12 * * * python Data/Students/jade/buildingEnergyApi/carbon_rooms.py >> ahs_carbon_data.csv 
+
+0 14 * * * python Data/Students/jade/buildingEnergyApi/problemareascron.py >> ahs_air_data.csv
+0 14 * * * python Data/Students/jade/buildingEnergyApi/cold_rooms.py >> ahs_cold_data.csv     
+0 14 * * * python Data/Students/jade/buildingEnergyApi/warm_rooms.py >> ahs_warm_data.csv     
+0 14 * * * python Data/Students/jade/buildingEnergyApi/carbon_rooms.py >> ahs_carbon_data.csv 
+
+
+'''
