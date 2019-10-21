@@ -78,3 +78,4 @@ with open('ahs_air_data.csv', mode='w') as ahs_air_data:
         temp_writer.writerow( ['{0},{1},{2},{3},{4},{5}'.format( current_time, row['Label'], temp_value, temp_units, co2_value, co2_units ) ])
         #instead of printing, uses writerow method to enter into the csv file
 
+ahs_air_data.close()
