@@ -5,6 +5,8 @@ import csv
 start_time = time.time()
 
 temp_min = 65
+temp_units = "deg F"
+co2_units = "ppm"
 
 new_data = pd.read_csv('ahs_air_data.csv', delimiter=",", names=['Time Stamp', 'Room Number', 'Temperature', 'Temperature Units', 'CO2', 'CO2 Units'])
 new_data = new_data.sort_values(by='Room Number')
