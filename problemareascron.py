@@ -17,7 +17,8 @@ start_time = time.time()
 #   - Facility
 #   - Instance ID of CO2 sensor
 #   - Instance ID of temperature sensor
-df = pd.read_csv('ahs_air.csv', na_filter=False, comment='#' )
+df = pd.read_csv('/media/ea/Data/Students/jade/buildingEnergyApi/ahs_air.csv', na_filter=False, comment='#' )
+# This file location ONLY WORKS ON THE SERVER --> be careful
 
 # Initialize empty bulk request
 bulk_rq = []
@@ -41,7 +42,9 @@ map = bulk_rsp['rsp_map']
 # print( 'Location,Temperature,Temperature Units,CO2,CO2 Units' )
 
 # writes to a new csv file, so we can use pandas on the real-time data
-with open('ahs_air_data.csv', mode='w') as ahs_air_data:
+
+# this file location ALSO ONLY WORKS ON THE SERVER --->
+with open('/media/ea/Data/Students/jade/buildingEnergyApi/ahs_air_data.csv', mode='w') as ahs_air_data:
     temp_writer = csv.writer(ahs_air_data, delimiter=";")
     # Iterate over the rows of the dataframe, displaying temperature and CO2 values extracted from map
     for index, row in df.iterrows():
@@ -85,25 +88,25 @@ print("HI")
 '''
 terminal commands:
 
-39 7 * * * python Data/Students/jade/buildingEnergyApi/problemareascron.py >> ahs_air_data.csv
-39 7 * * * python Data/Students/jade/buildingEnergyApi/cold_rooms.py >> ahs_cold_data.csv     
-39 7 * * * python Data/Students/jade/buildingEnergyApi/warm_rooms.py >> ahs_warm_data.csv     
-39 7 * * * python Data/Students/jade/buildingEnergyApi/carbon_rooms.py >> ahs_carbon_data.csv 
+39 7 * * * /media/ea/Data/Students/jade/buildingEnergyApi/venv/bin/python /media/ea/Data/Students/jade/buildingEnergyApi/problemareascron.py 
+39 7 * * * /media/ea/Data/Students/jade/buildingEnergyApi/venv/bin/python /media/ea/Data/Students/jade/buildingEnergyApi/cold_rooms.py   
+39 7 * * * /media/ea/Data/Students/jade/buildingEnergyApi/venv/bin/python /media/ea/Data/Students/jade/buildingEnergyApi/warm_rooms.py   
+39 7 * * * /media/ea/Data/Students/jade/buildingEnergyApi/venv/bin/python /media/ea/Data/Students/jade/buildingEnergyApi/carbon_rooms.py 
 
-0 10 * * * python Data/Students/jade/buildingEnergyApi/problemareascron.py >> ahs_air_data.csv
-0 10 * * * python Data/Students/jade/buildingEnergyApi/cold_rooms.py >> ahs_cold_data.csv     
-0 10* * * python Data/Students/jade/buildingEnergyApi/warm_rooms.py >> ahs_warm_data.csv     
-0 10 * * * python Data/Students/jade/buildingEnergyApi/carbon_rooms.py >> ahs_carbon_data.csv 
+0 10 * * * /media/ea/Data/Students/jade/buildingEnergyApi/venv/bin/python /media/ea/Data/Students/jade/buildingEnergyApi/problemareascron.py 
+0 10 * * * /media/ea/Data/Students/jade/buildingEnergyApi/venv/bin/python /media/ea/Data/Students/jade/buildingEnergyApi/cold_rooms.py   
+0 10 * * * /media/ea/Data/Students/jade/buildingEnergyApi/venv/bin/python /media/ea/Data/Students/jade/buildingEnergyApi/warm_rooms.py   
+0 10 * * * /media/ea/Data/Students/jade/buildingEnergyApi/venv/bin/python /media/ea/Data/Students/jade/buildingEnergyApi/carbon_rooms.py 
 
-0 12 * * * python Data/Students/jade/buildingEnergyApi/problemareascron.py >> ahs_air_data.csv
-0 12 * * * python Data/Students/jade/buildingEnergyApi/cold_rooms.py >> ahs_cold_data.csv     
-0 12 * * * python Data/Students/jade/buildingEnergyApi/warm_rooms.py >> ahs_warm_data.csv     
-0 12 * * * python Data/Students/jade/buildingEnergyApi/carbon_rooms.py >> ahs_carbon_data.csv 
+0 12 * * * /media/ea/Data/Students/jade/buildingEnergyApi/venv/bin/python /media/ea/Data/Students/jade/buildingEnergyApi/problemareascron.py 
+0 12 * * * /media/ea/Data/Students/jade/buildingEnergyApi/venv/bin/python /media/ea/Data/Students/jade/buildingEnergyApi/cold_rooms.py   
+0 12 * * * /media/ea/Data/Students/jade/buildingEnergyApi/venv/bin/python /media/ea/Data/Students/jade/buildingEnergyApi/warm_rooms.py   
+0 12 * * * /media/ea/Data/Students/jade/buildingEnergyApi/venv/bin/python /media/ea/Data/Students/jade/buildingEnergyApi/carbon_rooms.py 
 
-0 14 * * * python Data/Students/jade/buildingEnergyApi/problemareascron.py >> ahs_air_data.csv
-0 14 * * * python Data/Students/jade/buildingEnergyApi/cold_rooms.py >> ahs_cold_data.csv     
-0 14 * * * python Data/Students/jade/buildingEnergyApi/warm_rooms.py >> ahs_warm_data.csv     
-0 14 * * * python Data/Students/jade/buildingEnergyApi/carbon_rooms.py >> ahs_carbon_data.csv 
+0 14 * * * /media/ea/Data/Students/jade/buildingEnergyApi/venv/bin/python /media/ea/Data/Students/jade/buildingEnergyApi/problemareascron.py 
+0 14 * * * /media/ea/Data/Students/jade/buildingEnergyApi/venv/bin/python /media/ea/Data/Students/jade/buildingEnergyApi/cold_rooms.py   
+0 14 * * * /media/ea/Data/Students/jade/buildingEnergyApi/venv/bin/python /media/ea/Data/Students/jade/buildingEnergyApi/warm_rooms.py   
+0 14 * * * /media/ea/Data/Students/jade/buildingEnergyApi/venv/bin/python /media/ea/Data/Students/jade/buildingEnergyApi/carbon_rooms.py 
 
 
 '''

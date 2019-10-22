@@ -8,7 +8,7 @@ co2_max = 1200
 temp_units = "deg F"
 co2_units = "ppm"
 
-new_data = pd.read_csv('ahs_air_data.csv', delimiter=",", names=['Time Stamp', 'Room Number', 'Temperature', 'Temperature Units', 'CO2', 'CO2 Units'])
+new_data = pd.read_csv('/media/ea/Data/Students/jade/buildingEnergyApi/ahs_air_data.csv', delimiter=",", names=['Time Stamp', 'Room Number', 'Temperature', 'Temperature Units', 'CO2', 'CO2 Units'])
 new_data = new_data.sort_values(by='Room Number')
 print("Full CSV: ")
 print(new_data)
@@ -17,7 +17,7 @@ print(new_data)
 # print("\nToo Much CO2: \n")
 carbon_data = new_data[new_data.CO2 > co2_max][['Room Number', 'Temperature', 'CO2']].sort_values(by='CO2')
 
-with open('ahs_carbon_data.csv', 'a') as permanent_carbon_data:
+with open('/media/ea/Data/Students/jade/buildingEnergyApi/ahs_carbon_data.csv', 'a') as permanent_carbon_data:
     temp_writer = csv.writer(permanent_carbon_data, delimiter=";")
     current_time = time.asctime()
     for index, row in carbon_data.iterrows():

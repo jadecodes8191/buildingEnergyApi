@@ -8,7 +8,7 @@ temp_max = 75
 temp_units = "deg F"
 co2_units = "ppm"
 
-new_data = pd.read_csv('ahs_air_data.csv', delimiter=",", names=['Time Stamp', 'Room Number', 'Temperature', 'Temperature Units', 'CO2', 'CO2 Units'])
+new_data = pd.read_csv('/media/ea/Data/Students/jade/buildingEnergyApi/ahs_air_data.csv', delimiter=",", names=['Time Stamp', 'Room Number', 'Temperature', 'Temperature Units', 'CO2', 'CO2 Units'])
 new_data = new_data.sort_values(by='Room Number')
 print("Full CSV: ")
 print(new_data)
@@ -17,7 +17,7 @@ print(new_data)
 # print("\nToo Hot: \n")
 warm_data = new_data[new_data.Temperature > temp_max][['Room Number', 'Temperature', 'CO2']].sort_values(by='Temperature')
 
-with open('ahs_warm_data.csv', 'a') as permanent_warm_data:
+with open('/media/ea/Data/Students/jade/buildingEnergyApi/ahs_warm_data.csv', 'a') as permanent_warm_data:
     temp_writer = csv.writer(permanent_warm_data, delimiter=';')
     current_time = time.asctime()
     for index, row in warm_data.iterrows():
