@@ -80,6 +80,8 @@ with open('ahs_air_data.csv', mode='w') as ahs_air_data:
 
 ahs_air_data.close()
 
+print("HI")
+
 '''
 terminal commands:
 
