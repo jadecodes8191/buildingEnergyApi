@@ -10,7 +10,6 @@ warm_data = pd.read_csv("ahs_warm_data.csv", names=['Timestamp', 'Room #', 'Temp
 cold_data = pd.read_csv("ahs_cold_data.csv", names=['Timestamp', 'Room #', 'Temperature', 'Temp Units', 'CO2', 'CO2 Units'])
 carbon_data = pd.read_csv("ahs_carbon_data.csv", names=['Timestamp', 'Room #', 'Temperature', 'Temp Units', 'CO2', 'CO2 Units'])
 test= warm_data.reset_index()
-#print(test.iloc[1])
 
 # THE BELOW DATA (my_test_room and my_test_room_2) IS NOT REAL DATA! There is no room 000 at Andover High School.
 # This is just a test for the case in which a room has temperatures both below and above the norm within the same week.
@@ -18,7 +17,6 @@ my_test_room = pd.Series(["Sun Oct 20 12:00:00 1985", "000", -15, "deg F", np.Na
 my_test_room2 = pd.Series(["Sun Oct 20 14:00:00 1985", "000", 250, "deg F", np.NaN, "ppm"], index=['Timestamp', 'Room #', 'Temperature', 'Temp Units', 'CO2', 'CO2 Units'])
 warm_data = warm_data.append(my_test_room, ignore_index=True)
 cold_data = cold_data.append(my_test_room2, ignore_index=True)
-#print(warm_data)
 
 warm_data['Temp. Difference'] = warm_data['Temperature'] - temp_max
 cold_data['Temp. Difference'] = cold_data['Temperature'] - temp_min
@@ -98,6 +96,8 @@ for room in temp_vals:
 
 temp_vals = temp_vals.T
 print(temp_vals)
+
+temp_vals['Temp. Difference'] = 0 #the mean of the _x and _Y columns is ideal... but adding NaN to something could cause more issues.
 all_data = pd.merge(temp_vals, carbon_data, how='left', on=['Room #'])
 #inner_data = pd.merge(temp_vals, carbon_data, how='inner', on=['Room #'])#the problem is that it's not merging successfully!
 
