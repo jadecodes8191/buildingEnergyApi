@@ -3,6 +3,7 @@
 import sqlalchemy
 import pandas as pd
 import sqlite3
+import numpy as np
 
 # Copyright 2018 Building Energy Gateway.  All rights reserved.
 
@@ -91,20 +92,13 @@ ahs_air_data.close()
 PATH = 'my_file'#change for the server
 
 df = pd.read_csv('ahs_air_data.csv', names=['Timestamp', 'Room #', 'Temperature', 'Temp. Units', 'CO2', 'CO2 Units']).set_index('Room #')
+my_test_room = pd.Series(["Sun Oct 20 12:00:00 1985", "000", -15, "deg F", np.NaN, "ppm"], index=['Timestamp', 'Room #', 'Temperature', 'Temp Units', 'CO2', 'CO2 Units'])
+df.append(my_test_room, ignore_index=True)
 
 engine = sqlalchemy.create_engine('sqlite:///' + PATH)
 
 conn = sqlite3.connect(PATH)
-df.to_sql("ProblemAreasDatabase", conn)
+df.to_sql("ProblemAreasDatabase", conn, if_exists='append')
 new_df = pd.read_sql_table("ProblemAreasDatabase", engine)
 
 print(new_df)
-
-'''
-right now, it needs me to define a new table name every time...
-
-sql = 'DELETE FROM ProblemAreasDatabase'
-cur = conn.cursor()
-cur.execute(sql)
-conn.commit()
-'''
