@@ -44,7 +44,7 @@ map = bulk_rsp['rsp_map']
 # writes to a new csv file, so we can use pandas on the real-time data
 
 # this file location ALSO ONLY WORKS ON THE SERVER --->
-with open('/media/ea/Data/Students/jade/buildingEnergyApi/ahs_air_data.csv', mode='a') as ahs_air_data:
+with open('/media/ea/Data/Students/jade/buildingEnergyApi/ahs_air_data.csv', mode='w') as ahs_air_data:
     temp_writer = csv.writer(ahs_air_data, delimiter=";")
     # Iterate over the rows of the dataframe, displaying temperature and CO2 values extracted from map
     for index, row in df.iterrows():
