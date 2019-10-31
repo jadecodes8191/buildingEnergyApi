@@ -29,6 +29,9 @@ temp_vals = pd.merge(warm_data, cold_data, how='outer', on=['Room #'])
 
 all_data = pd.merge(temp_vals, carbon_data, how='outer', on=['Room #']).fillna(0)
 
+conn = sqlite3.connect(PATH)
+all_data.to_sql("DailyDatabase", conn, if_exists='append')
+
 '''
 with open('basic_weekly.csv', 'w') as weekly_df:
     csv_writer = csv.writer(weekly_df, delimiter=";")

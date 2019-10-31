@@ -31,19 +31,19 @@ print(new_data)
 cold_data = new_data[new_data.Temperature < temp_min][['Room #', 'Temperature', 'CO2']].sort_values(by="Temperature", ascending=True)
 
 conn = sqlite3.connect(PATH)
-cold_data.to_sql("ColdDatabase", conn)
+cold_data.to_sql("ColdDatabase", conn, if_exists='append')
 
 # print("\nToo Much CO2: \n")
 carbon_data = new_data[new_data.CO2 > co2_max][['Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
 
 conn = sqlite3.connect(PATH)
-carbon_data.to_sql("CarbonDatabase", conn)
+carbon_data.to_sql("CarbonDatabase", conn, if_exists='append')
 
 # print("\nToo Hot: \n")
 warm_data = new_data[new_data.Temperature > temp_max][['Room #', 'Temperature', 'CO2']].sort_values(by='Temperature')
 
 conn = sqlite3.connect(PATH)
-warm_data.to_sql("WarmDatabase", conn)
+warm_data.to_sql("WarmDatabase", conn, if_exists='append')
 
 # Report elapsed time
 elapsed_time = round( ( time.time() - start_time ) * 1000 ) / 1000
