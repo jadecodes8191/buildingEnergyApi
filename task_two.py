@@ -1,4 +1,4 @@
-#to be run whenever task 1 is run: identifies problem areas for one 15-minute span of data
+# basically obsolete now, all this is included in task 1-and-2
 
 import pandas as pd
 import time

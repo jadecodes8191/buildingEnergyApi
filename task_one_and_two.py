@@ -13,6 +13,12 @@ import numbers
 import csv
 from crontab import CronTab
 
+temp_min = 65
+temp_units = "deg F"
+co2_units = "ppm"
+co2_max = 1200
+temp_max = 75
+
 start_time = time.time()
 
 # Read spreadsheet into a dataframe.
@@ -99,6 +105,30 @@ engine = sqlalchemy.create_engine('sqlite:///' + PATH)
 
 conn = sqlite3.connect(PATH)
 df.to_sql("ProblemAreasDatabase", conn, if_exists='append')
-new_df = pd.read_sql_table("ProblemAreasDatabase", engine)
+new_data = pd.read_sql_table("ProblemAreasDatabase", engine)
 
-print(new_df)
+#new_data = pd.read_csv('', delimiter=",", names=['Time Stamp', 'Room Number', 'Temperature', 'Temperature Units', 'CO2', 'CO2 Units'])
+new_data = new_data.sort_values(by='Room #')
+print("Full CSV: ")
+print(new_data)
+# print(new_data[new_data.Location == '270.01'][['Room Number', 'Temperature', 'CO2']])
+
+# now we can connect the 3 dataframes to a database
+
+conn = sqlite3.connect(PATH)
+
+# print("\nToo Cold: \n")
+cold_data = new_data[new_data.Temperature < temp_min][['Room #', 'Temperature', 'CO2']].sort_values(by="Temperature", ascending=True)
+cold_data.to_sql("ColdDatabase", conn, if_exists='append')
+
+# print("\nToo Much CO2: \n")
+carbon_data = new_data[new_data.CO2 > co2_max][['Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
+carbon_data.to_sql("CarbonDatabase", conn, if_exists='append')
+
+# print("\nToo Hot: \n")
+warm_data = new_data[new_data.Temperature > temp_max][['Room #', 'Temperature', 'CO2']].sort_values(by='Temperature')
+warm_data.to_sql("WarmDatabase", conn, if_exists='append')
+
+# Report elapsed time
+elapsed_time = round( ( time.time() - start_time ) * 1000 ) / 1000
+print( '\nElapsed time: {0} seconds'.format( elapsed_time ) )
