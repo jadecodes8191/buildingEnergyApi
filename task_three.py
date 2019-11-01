@@ -43,3 +43,21 @@ with open('basic_weekly.csv', 'w') as weekly_df:
         csv_writer.writerow(["{0}, {1}, {2}, {3}".format(my_index, temp_warm, temp_cold, temp_carbon)])
 
 '''
+
+"""
+should be run once a week: clear out daily database and others, or maybe save them to a more permanent database, just to
+clear for the next weekly report.
+"""
+
+conn = sqlite3.connect(PATH)
+cursor = conn.cursor()
+
+drop = "DROP TABLE ColdDatabase"
+drop2 = "DROP TABLE WarmDatabase"
+drop3 = "DROP TABLE CarbonDatabase"
+
+cursor.execute(drop)
+cursor.execute(drop2)
+cursor.execute(drop3)
+
+conn.close()

@@ -10,8 +10,12 @@ PATH = 'my_file'
 conn = sqlite3.connect(PATH)
 cursor = conn.cursor()
 
-drop = "DROP TABLE DailyDatabase"
+drop = "DROP TABLE ColdDatabase"
+drop2 = "DROP TABLE WarmDatabase"
+drop3 = "DROP TABLE CarbonDatabase"
 
 cursor.execute(drop)
+cursor.execute(drop2)
+cursor.execute(drop3)
 
 conn.close()

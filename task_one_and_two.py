@@ -98,17 +98,17 @@ ahs_air_data.close()
 PATH = 'my_file'#change for the server
 
 df = pd.read_csv('ahs_air_data.csv', names=['Timestamp', 'Room #', 'Temperature', 'Temp. Units', 'CO2', 'CO2 Units']).set_index('Room #')
-my_test_room = pd.Series(["Sun Oct 20 12:00:00 1985", "000", -15, "deg F", np.NaN, "ppm"], index=['Timestamp', 'Room #', 'Temperature', 'Temp Units', 'CO2', 'CO2 Units'])
-df.append(my_test_room, ignore_index=True)
+#my_test_room = pd.Series(["Sun Oct 20 12:00:00 1985", "000", -15, "deg F", np.NaN, "ppm"], index=['Timestamp', 'Room #', 'Temperature', 'Temp Units', 'CO2', 'CO2 Units'])
+#df.append(my_test_room, ignore_index=True)
 
 engine = sqlalchemy.create_engine('sqlite:///' + PATH)
 
 conn = sqlite3.connect(PATH)
 df.to_sql("ProblemAreasDatabase", conn, if_exists='append')
-new_data = pd.read_sql_table("ProblemAreasDatabase", engine)
+#new_data = pd.read_sql_table("ProblemAreasDatabase", engine)
 
 #new_data = pd.read_csv('', delimiter=",", names=['Time Stamp', 'Room Number', 'Temperature', 'Temperature Units', 'CO2', 'CO2 Units'])
-new_data = new_data.sort_values(by='Room #')
+new_data = df.sort_values(by='Room #').reset_index()
 print("Full CSV: ")
 print(new_data)
 # print(new_data[new_data.Location == '270.01'][['Room Number', 'Temperature', 'CO2']])
@@ -119,6 +119,7 @@ conn = sqlite3.connect(PATH)
 
 # print("\nToo Cold: \n")
 cold_data = new_data[new_data.Temperature < temp_min][['Room #', 'Temperature', 'CO2']].sort_values(by="Temperature", ascending=True)
+print(cold_data)
 cold_data.to_sql("ColdDatabase", conn, if_exists='append')
 
 # print("\nToo Much CO2: \n")
