@@ -4,6 +4,8 @@ import sqlite3
 import sqlalchemy
 import pandas as pd
 import numpy as np
+import csv
+import openpyxl
 
 PATH = 'my_file'
 
@@ -28,6 +30,7 @@ daily_data = daily_data.groupby("Room #").agg({"Days With Problems": np.size,
                                                "Intervals Too Warm" : np.sum,
                                                "Intervals Too Cold" : np.sum,
                                                "Intervals Too Much CO2": np.sum,
+                                               "Intervals Too Little CO2": np.sum,
                                                "Highest Temperature" : np.max,
                                                "Lowest Temperature" : np.min,
                                                "First Time Too Warm" : np.min,
@@ -37,12 +40,18 @@ daily_data = daily_data.groupby("Room #").agg({"Days With Problems": np.size,
 
 daily_data = pd.merge(daily_data, temp_analysis, how='outer', on=['Room #'])
 daily_data = pd.merge(daily_data, co2_analysis, how='outer', on=['Room #'])
-print(daily_data)
+
+daily_data.to_excel("output.xlsx")
+daily_data.to_csv("basic_weekly.csv")
 
 """
 should be run once a week: clear out daily database and others, or maybe save them to a more permanent database, just to
 clear for the next weekly report.
 """
+
+
+another_csv_file = pd.read_csv("basic_weekly.csv")
+print(another_csv_file)
 
 '''
 PATH = 'my_file'
