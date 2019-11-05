@@ -26,10 +26,10 @@ warm_data_copy['First Time Too Warm'] = warm_data_copy['Timestamp']
 warm_data_copy['Last Time Too Warm'] = warm_data_copy['Timestamp']
 
 cold_with_times = cold_data_copy.groupby("Room #").agg({'First Time Too Cold' : np.min, 'Last Time Too Cold' : np.max})
-print(cold_with_times)
+#print(cold_with_times)
 
 warm_with_times = warm_data_copy.groupby("Room #").agg({'First Time Too Warm' : np.min, 'Last Time Too Warm' : np.max})
-print(warm_with_times)
+#print(warm_with_times)
 
 time_temp_vals = pd.merge(cold_with_times, warm_with_times, how='outer', on=['Room #']).fillna("N/A")
 
@@ -61,6 +61,7 @@ carbon_data = carbon_data.groupby("Room #").agg({'Intervals Too Much CO2' : np.s
 low_carbon_data = low_carbon_data.groupby("Room #").agg({'Intervals Too Little CO2' : np.size})
 
 temp_vals = pd.merge(warm_data, cold_data, how='outer', on=['Room #'])
+#print(temp_vals)
 carbon_vals = pd.merge(carbon_data, low_carbon_data, how='outer', on=['Room #'])
 
 # NEW VERSION (used for mean and median):
@@ -81,9 +82,10 @@ temp_vals_copy = pd.merge(warm_data_copy, cold_data_copy, how='outer', on=['Room
 temp_vals_copy['Median Temperature'] = temp_vals_copy['Temperature']
 temp_vals_copy['Highest Temperature'] = temp_vals_copy['Temperature']
 temp_vals_copy['Lowest Temperature'] = temp_vals_copy['Temperature']
+all_temps = temp_vals_copy.set_index("Room #")['Temperature']
 
 carbon_vals_copy = pd.merge(carbon_data_copy, low_carbon_data_copy, how='outer', on=['Room #', 'Temperature', 'CO2'])
-
+all_carbon = carbon_vals_copy.set_index("Room #")['CO2']
 
 #temp_vals_copy['Are there any differences here?'] = temp_vals_copy['Temperature']
 temp_vals_copy = temp_vals_copy.groupby("Room #").agg({'Temperature': np.mean, 'Median Temperature': np.median, 'Highest Temperature': np.max, 'Lowest Temperature': np.min})
@@ -110,6 +112,8 @@ print(all_data.T.index)
 
 conn = sqlite3.connect(PATH)
 all_data.to_sql("DailyDatabase", conn, if_exists='append')
+all_temps.to_sql("DailyTempDatabase", conn, if_exists='append')
+all_carbon.to_sql("DailyCarbonDatabase", conn, if_exists='append')
 
 '''
 with open('basic_weekly.csv', 'w') as weekly_df:
