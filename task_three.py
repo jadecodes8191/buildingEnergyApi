@@ -19,6 +19,20 @@ warm_data_copy = warm_data.copy()
 carbon_data_copy = carbon_data.copy()
 low_carbon_data_copy = low_carbon_data.copy()
 
+cold_data_copy['First Time Too Cold'] = cold_data_copy['Timestamp']
+cold_data_copy['Last Time Too Cold'] = cold_data_copy['Timestamp']
+
+warm_data_copy['First Time Too Warm'] = warm_data_copy['Timestamp']
+warm_data_copy['Last Time Too Warm'] = warm_data_copy['Timestamp']
+
+cold_with_times = cold_data_copy.groupby("Room #").agg({'First Time Too Cold' : np.min, 'Last Time Too Cold' : np.max})
+print(cold_with_times)
+
+warm_with_times = warm_data_copy.groupby("Room #").agg({'First Time Too Warm' : np.min, 'Last Time Too Warm' : np.max})
+print(warm_with_times)
+
+time_temp_vals = pd.merge(cold_with_times, warm_with_times, how='outer', on=['Room #']).fillna("N/A")
+
 '''
 coldest = cold_data.sort_values(by='Temperature', ascending=True).reset_index().iloc[0]
 warmest = warm_data.sort_values(by='Temperature', ascending=False).reset_index().iloc[0]
@@ -78,21 +92,24 @@ carbon_vals_copy = carbon_vals_copy.groupby("Room #").agg({'CO2' : np.mean})
 #print(temp_vals_copy['Median Temperature'])
 #print(temp_vals_copy)
 
-all_temp_data = pd.merge(temp_vals, temp_vals_copy, on=['Room #']).fillna(0)
-print(all_temp_data)
+most_temp_data = pd.merge(temp_vals, temp_vals_copy, on=['Room #']).fillna(0)
+print(most_temp_data)
 
 all_carbon_data = pd.merge(carbon_vals, carbon_vals_copy, on=['Room #']).fillna(0)
 print(all_carbon_data)
+
+all_temp_data = pd.merge(most_temp_data, time_temp_vals, on=['Room #']).fillna(0)
+print(all_temp_data)
 
 #warm_data = warm_data.groupby("Room #").agg({'Intervals Too Warm' : np.size})
 #cold_data = cold_data.groupby("Room #").agg({'Intervals Too Cold' : np.size})
 #carbon_data_copy = carbon_data_copy.groupby("Room #").agg({'Intervals Too Much CO2' : np.size})
 
 all_data = pd.merge(all_temp_data, all_carbon_data, how='outer', on=['Room #']).fillna(0)
-print(all_data)
+print(all_data.T.index)
 
 conn = sqlite3.connect(PATH)
-all_data.to_sql("DailyDatabase", conn, if_exists='replace')
+all_data.to_sql("DailyDatabase", conn, if_exists='append')
 
 '''
 with open('basic_weekly.csv', 'w') as weekly_df:
@@ -112,6 +129,7 @@ clear for the next weekly report.
 """
 
 
+'''
 conn = sqlite3.connect(PATH)
 cursor = conn.cursor()
 
@@ -124,5 +142,7 @@ cursor.execute(drop2)
 cursor.execute(drop3)
 
 conn.close()
+
+'''
 
 

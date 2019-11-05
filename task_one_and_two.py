@@ -100,7 +100,6 @@ PATH = 'my_file'#change for the server
 df = pd.read_csv('ahs_air_data.csv', names=['Timestamp', 'Room #', 'Temperature', 'Temp. Units', 'CO2', 'CO2 Units']).set_index('Room #')
 outside = df.loc['Outside Air']
 co2_min = outside['CO2'] - 20
-print(co2_min)
 #my_test_room = pd.DataFrame(pd.Series(["Sun Oct 20 12:00:00 1985", "000", 15, "deg F", np.NaN, "ppm"], index=['Timestamp', 'Room #', 'Temperature', 'Temp Units', 'CO2', 'CO2 Units']))
 #my_test_room = my_test_room.T.set_index('Room #')
 #print(my_test_room)
@@ -124,20 +123,20 @@ print(new_data)
 conn = sqlite3.connect(PATH)
 
 # print("\nToo Cold: \n")
-cold_data = new_data[new_data.Temperature < temp_min][['Room #', 'Temperature', 'CO2']].sort_values(by="Temperature", ascending=True)
+cold_data = new_data[new_data.Temperature < temp_min][['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by="Temperature", ascending=True)
 print(cold_data)
 cold_data.to_sql("ColdDatabase", conn, if_exists='append')
 
 # print("\nToo Much CO2: \n")
-carbon_data = new_data[new_data.CO2 > co2_max][['Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
+carbon_data = new_data[new_data.CO2 > co2_max][['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
 carbon_data.to_sql("CarbonDatabase", conn, if_exists='append')
 
 # print("\nToo Little CO2: \n")
-less_carbon_data = new_data[new_data.CO2 < co2_min][['Room #', 'Temperature', 'CO2']].sort_values(by='CO2', ascending=True)
+less_carbon_data = new_data[new_data.CO2 < co2_min][['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by='CO2', ascending=True)
 less_carbon_data.to_sql("LowCarbonDatabase", conn, if_exists='append')
 
 # print("\nToo Hot: \n")
-warm_data = new_data[new_data.Temperature > temp_max][['Room #', 'Temperature', 'CO2']].sort_values(by='Temperature')
+warm_data = new_data[new_data.Temperature > temp_max][['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by='Temperature')
 warm_data.to_sql("WarmDatabase", conn, if_exists='append')
 
 # Report elapsed time
