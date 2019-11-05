@@ -98,8 +98,12 @@ ahs_air_data.close()
 PATH = 'my_file'#change for the server
 
 df = pd.read_csv('ahs_air_data.csv', names=['Timestamp', 'Room #', 'Temperature', 'Temp. Units', 'CO2', 'CO2 Units']).set_index('Room #')
-#my_test_room = pd.Series(["Sun Oct 20 12:00:00 1985", "000", -15, "deg F", np.NaN, "ppm"], index=['Timestamp', 'Room #', 'Temperature', 'Temp Units', 'CO2', 'CO2 Units'])
-#df.append(my_test_room, ignore_index=True)
+print(df)
+#my_test_room = pd.DataFrame(pd.Series(["Sun Oct 20 12:00:00 1985", "000", 15, "deg F", np.NaN, "ppm"], index=['Timestamp', 'Room #', 'Temperature', 'Temp Units', 'CO2', 'CO2 Units']))
+#my_test_room = my_test_room.T.set_index('Room #')
+#print(my_test_room)
+#df = df.append(my_test_room, sort=False)
+#print(df)
 
 engine = sqlalchemy.create_engine('sqlite:///' + PATH)
 

@@ -13,6 +13,23 @@ cold_data = pd.read_sql_table("ColdDatabase", engine)
 warm_data = pd.read_sql_table("WarmDatabase", engine)
 carbon_data = pd.read_sql_table("CarbonDatabase", engine)
 
+cold_data_copy = cold_data.copy()
+warm_data_copy = warm_data.copy()
+carbon_data_copy = carbon_data.copy()
+
+'''
+coldest = cold_data.sort_values(by='Temperature', ascending=True).reset_index().iloc[0]
+warmest = warm_data.sort_values(by='Temperature', ascending=False).reset_index().iloc[0]
+carbonest = carbon_data.sort_values(by='CO2', ascending=False).reset_index().iloc[0]
+print(coldest)
+print(warmest)
+print(carbonest)
+
+nice data to have, but NOT part of the required weekly report.
+
+'''
+# OLD VERSION (used for interval counting):
+
 print(cold_data)
 print(warm_data)
 print(carbon_data)
@@ -29,8 +46,45 @@ temp_vals = pd.merge(warm_data, cold_data, how='outer', on=['Room #'])
 
 all_data = pd.merge(temp_vals, carbon_data, how='outer', on=['Room #']).fillna(0)
 
-conn = sqlite3.connect(PATH)
-all_data.to_sql("DailyDatabase", conn, if_exists='append')
+# NEW VERSION (used for mean and median):
+
+cold_data_copy = cold_data_copy.drop('index', axis=1)
+warm_data_copy = warm_data_copy.drop('index', axis=1)
+print(warm_data_copy)
+#print(carbon_data)
+
+#warm_data['Intervals Too Warm'] = None
+#cold_data['Intervals Too Cold'] = None
+#carbon_data['Intervals Too Much CO2'] = None
+
+#warm_data = warm_data.groupby("Room #").agg({'Intervals Too Warm' : np.size})
+#cold_data = cold_data.groupby("Room #").agg({'Intervals Too Cold' : np.size})
+
+temp_vals_copy = pd.merge(warm_data_copy, cold_data_copy, how='outer', on=['Room #', 'Temperature', 'CO2'])
+temp_vals_copy['Median Temperature'] = temp_vals_copy['Temperature']
+temp_vals_copy['Highest Temperature'] = temp_vals_copy['Temperature']
+temp_vals_copy['Lowest Temperature'] = temp_vals_copy['Temperature']
+
+#temp_vals_copy['Are there any differences here?'] = temp_vals_copy['Temperature']
+temp_vals_copy = temp_vals_copy.groupby("Room #").agg({'Temperature': np.mean, 'Median Temperature': np.median, 'Highest Temperature': np.max, 'Lowest Temperature': np.min})
+#print(temp_vals_copy['Temperature'])
+#print(temp_vals_copy['Median Temperature'])
+print(temp_vals_copy)
+
+all_temp_data = pd.merge(temp_vals, temp_vals_copy, on=['Room #']).fillna(0)
+print(all_temp_data)
+
+
+#warm_data = warm_data.groupby("Room #").agg({'Intervals Too Warm' : np.size})
+#cold_data = cold_data.groupby("Room #").agg({'Intervals Too Cold' : np.size})
+#carbon_data_copy = carbon_data_copy.groupby("Room #").agg({'Intervals Too Much CO2' : np.size})
+
+
+#all_data = pd.merge(temp_vals, carbon_data, how='outer', on=['Room #']).fillna(0)
+#print(all_data)
+
+#conn = sqlite3.connect(PATH)
+#all_data.to_sql("DailyDatabase", conn, if_exists='append')
 
 '''
 with open('basic_weekly.csv', 'w') as weekly_df:
@@ -49,6 +103,7 @@ should be run once a week: clear out daily database and others, or maybe save th
 clear for the next weekly report.
 """
 
+
 conn = sqlite3.connect(PATH)
 cursor = conn.cursor()
 
@@ -61,3 +116,5 @@ cursor.execute(drop2)
 cursor.execute(drop3)
 
 conn.close()
+
+
