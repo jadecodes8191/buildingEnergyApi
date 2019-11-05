@@ -95,28 +95,25 @@ with open('ahs_air_data.csv', mode='w') as ahs_air_data:
 
 ahs_air_data.close()
 
-PATH = 'my_file'#change for the server
+PATH = 'my_file'
+# ^this works on the server also
 
+# Log raw data into permanent database
 df = pd.read_csv('ahs_air_data.csv', names=['Timestamp', 'Room #', 'Temperature', 'Temp. Units', 'CO2', 'CO2 Units']).set_index('Room #')
-outside = df.loc['Outside Air']
-co2_min = outside['CO2'] - 20
-#my_test_room = pd.DataFrame(pd.Series(["Sun Oct 20 12:00:00 1985", "000", 15, "deg F", np.NaN, "ppm"], index=['Timestamp', 'Room #', 'Temperature', 'Temp Units', 'CO2', 'CO2 Units']))
-#my_test_room = my_test_room.T.set_index('Room #')
-#print(my_test_room)
-#df = df.append(my_test_room, sort=False)
-#print(df)
-
 engine = sqlalchemy.create_engine('sqlite:///' + PATH)
-
 conn = sqlite3.connect(PATH)
 df.to_sql("ProblemAreasDatabase", conn, if_exists='append')
-#new_data = pd.read_sql_table("ProblemAreasDatabase", engine)
 
-#new_data = pd.read_csv('', delimiter=",", names=['Time Stamp', 'Room Number', 'Temperature', 'Temperature Units', 'CO2', 'CO2 Units'])
+# Carbon Dioxide minimum is calculated by subtracting 20 from the outside levels
+outside = df.loc['Outside Air']
+co2_min = outside['CO2'] - 20
+
+# TASK TWO BEGINS HERE: analysis of problem rooms at each interval
+
+#creates a sort of copy for analysis/Task 2
 new_data = df.sort_values(by='Room #').reset_index()
 print("Full CSV: ")
 print(new_data)
-# print(new_data[new_data.Location == '270.01'][['Room Number', 'Temperature', 'CO2']])
 
 # now we can connect the 3 dataframes to a database
 
