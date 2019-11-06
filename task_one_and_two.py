@@ -102,7 +102,7 @@ PATH = 'my_file'
 df = pd.read_csv('ahs_air_data.csv', names=['Timestamp', 'Room #', 'Temperature', 'Temp. Units', 'CO2', 'CO2 Units']).set_index('Room #')
 engine = sqlalchemy.create_engine('sqlite:///' + PATH)
 conn = sqlite3.connect(PATH)
-df.to_sql("ProblemAreasDatabase", conn, if_exists='append')
+df.to_sql("TempAndCO2Log", conn, if_exists='append')
 
 # Carbon Dioxide minimum is calculated by subtracting 20 from the outside levels
 outside = df.loc['Outside Air']
