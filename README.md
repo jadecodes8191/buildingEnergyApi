@@ -10,7 +10,7 @@ Main files to take a look at:
   - Finally, each program writes these rooms and their values to more permanent CSV files (ahs_warm_data, ahs_carbon_data, ahs_cold_data).
   
 - basic_weekly_report.py and basic_weekly.csv
-  - This is a simple version of a weekly report -- for each room that logs as having problems during the week, this produces the number of intervals at which the room was too warm, too cold, and had too much carbon dioxide throughout the week.
+  - This is a very simple version of a weekly report -- for each room that logs as having problems during the week, this produces the number of intervals at which the room was too warm, too cold, and had too much carbon dioxide throughout the week.
   
-- task_one through task_four -- currently in progress
-  - This is the more in-depth version of the weekly report, which both makes use of databases and aggregates the data more systematically (first per day, and then per week), while storing the raw data to allow for more flexibility and use cases.
+- task_one_and_two, task_three, and task_four
+  - This is the more in-depth version of the weekly report, which both makes use of databases and aggregates the data more systematically (first per day, and then per week), while storing the raw data to allow for more flexibility and use cases. It includes additional data, such as the mean and median temperature and carbon dioxide, as well as the first and last times certain issues were recorded for a room. 
