@@ -110,20 +110,22 @@ clear for the next weekly report.
 """
 
 
-'''
+
 conn = sqlite3.connect(PATH)
 cursor = conn.cursor()
 
 drop = "DROP TABLE ColdDatabase"
 drop2 = "DROP TABLE WarmDatabase"
 drop3 = "DROP TABLE CarbonDatabase"
+drop4 = "DROP TABLE LowCarbonDatabase"
 
 cursor.execute(drop)
 cursor.execute(drop2)
 cursor.execute(drop3)
+cursor.execute(drop4)
 
 conn.close()
 
-'''
+
 
 

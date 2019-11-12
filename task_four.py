@@ -53,17 +53,20 @@ clear for the next weekly report.
 another_csv_file = pd.read_csv("basic_weekly.csv")
 print(another_csv_file)
 
-'''
+
 PATH = 'my_file'
 
 conn = sqlite3.connect(PATH)
 cursor = conn.cursor()
 
 drop = "DROP TABLE DailyDatabase"
+drop2 = "DROP TABLE DailyTempDatabase"
+drop3 = "DROP TABLE DailyCarbonDatabase"
 
 cursor.execute(drop)
+cursor.execute(drop2)
+cursor.execute(drop3)
 
 conn.close()
 
-'''
 
