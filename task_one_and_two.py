@@ -99,10 +99,31 @@ PATH = 'my_file'
 # ^this works on the server also
 
 # Log raw data into permanent database
-df = pd.read_csv('ahs_air_data.csv', names=['Timestamp', 'Room #', 'Temperature', 'Temp. Units', 'CO2', 'CO2 Units']).set_index('Room #')
-engine = sqlalchemy.create_engine('sqlite:///' + PATH)
-conn = sqlite3.connect(PATH)
-df.to_sql("TempAndCO2Log", conn, if_exists='append')
+df = pd.read_csv('ahs_air_data.csv', names=['Timestamp', 'Room #', 'Temperature', 'Temp. Units', 'CO2', 'CO2 Units'])
+
+# Time Testing Cont'd. (not real rooms, unrealistic values should indicate if these get into any permanent databases, but they shouldn't
+'''
+my_test_room = pd.Series(['Sun Nov 10 17:00:00 2019', '000', -890, 'deg C', -30, 'ppm'], index=df.T.index)
+my_second_test_room = pd.Series(['Wed Nov 6 16:00:00 2019', '543', -800, 'deg C', -8080, 'ppm'], index=df.T.index)
+my_third_test_room = pd.Series(['Mon Nov 11 16:00:00 2019', '000', -990, 'deg C', -50, 'ppm'], index=df.T.index)
+my_fourth_test_room = pd.Series(['Wed Nov 6 19:00:00 2019', '543', 4000, 'deg C', 8, 'ppm'], index=df.T.index)
+my_fifth_test_room = pd.Series(['Mon Nov 11 21:00:00 2019', '543', -909090, 'deg C', 8, 'ppm'], index=df.T.index)
+my_sixth_test_room = pd.Series(['Thu Oct 31 17:00:00 2019', '000', -890, 'deg C', -30, 'ppm'], index=df.T.index)
+
+df = df.append(my_test_room, ignore_index=True)
+df = df.append(my_second_test_room, ignore_index=True)
+df = df.append(my_third_test_room, ignore_index=True)
+df = df.append(my_fourth_test_room, ignore_index=True)
+df = df.append(my_fifth_test_room, ignore_index=True)
+df = df.append(my_sixth_test_room, ignore_index=True)
+'''
+
+df = df.set_index('Room #')
+
+#comment out permanent database for now
+#engine = sqlalchemy.create_engine('sqlite:///' + PATH)
+#conn = sqlite3.connect(PATH)
+#df.to_sql("TempAndCO2Log", conn, if_exists='append')
 
 # Carbon Dioxide minimum is calculated by subtracting 20 from the outside levels
 outside = df.loc['Outside Air']
@@ -110,12 +131,12 @@ co2_min = outside['CO2'] - 20
 
 # TASK TWO BEGINS HERE: analysis of problem rooms at each interval
 
-#creates a sort of copy for analysis/Task 2
+# creates a sort of copy for analysis/Task 2
 new_data = df.sort_values(by='Room #').reset_index()
 print("Full CSV: ")
 print(new_data)
 
-# now we can connect the 3 dataframes to a database
+# now we can connect the dataframe to 3 databases
 
 conn = sqlite3.connect(PATH)
 

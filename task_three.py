@@ -1,5 +1,6 @@
 #to be run each day: collects problems from task two and aggregates them into daily issue areas.
 
+import datetime
 import sqlalchemy
 import pandas as pd
 import sqlite3
@@ -15,6 +16,13 @@ warm_data = pd.read_sql_table("WarmDatabase", engine)
 carbon_data = pd.read_sql_table("CarbonDatabase", engine)
 low_carbon_data = pd.read_sql_table("LowCarbonDatabase", engine)
 
+# Fixing Times hopefully
+#print(cold_data.T.index)
+for x in range(0, len(cold_data['Timestamp'])):
+    cold_data['Timestamp'].loc[x] = (pd.to_datetime(cold_data['Timestamp'].loc[x]) - datetime.timedelta(0))
+for x in range(0, len(warm_data['Timestamp'])):
+    warm_data['Timestamp'].loc[x] = (pd.to_datetime(warm_data['Timestamp'].loc[x]) - datetime.timedelta(0))
+
 # Creates copies such that we can do different kinds of analysis on different copies
 cold_data_copy = cold_data.copy()
 warm_data_copy = warm_data.copy()
@@ -26,6 +34,13 @@ cold_data_copy['First Time Too Cold'] = cold_data_copy['Timestamp']
 cold_data_copy['Last Time Too Cold'] = cold_data_copy['Timestamp']
 warm_data_copy['First Time Too Warm'] = warm_data_copy['Timestamp']
 warm_data_copy['Last Time Too Warm'] = warm_data_copy['Timestamp']
+
+# Time Testing
+#print(cold_data_copy['First Time Too Cold'])
+#print(np.min(cold_data_copy['First Time Too Cold']))  # prints incorrectly across days - nov 9 is min
+#print(np.max(cold_data_copy['First Time Too Cold']))  # prints incorrectly across days - nov 5 is max on same trial
+#print(np.min(["Sun Nov 10 17:00:00 2019", "Wed Nov 6 16:00:00 2019"]))
+# but this only happens when i put it in the pandas format -- in other formats it was calculating correctly
 
 cold_with_times = cold_data_copy.groupby("Room #").agg({'First Time Too Cold' : np.min, 'Last Time Too Cold' : np.max})
 warm_with_times = warm_data_copy.groupby("Room #").agg({'First Time Too Warm' : np.min, 'Last Time Too Warm' : np.max})
@@ -76,16 +91,30 @@ temp_vals_copy = temp_vals_copy.groupby("Room #").agg({'Highest Temperature': np
 carbon_vals_copy = carbon_vals_copy.groupby("Room #").agg({'CO2' : np.mean})# This is now simply a placeholder for the groupby -- the mean value per day is never used
 
 most_temp_data = pd.merge(temp_vals, temp_vals_copy, on=['Room #']).fillna(0)
-print(most_temp_data)
+#print(most_temp_data)
 
 all_carbon_data = pd.merge(carbon_vals, carbon_vals_copy, on=['Room #']).fillna(0)
-print(all_carbon_data)
+#print(all_carbon_data)
 
 all_temp_data = pd.merge(most_temp_data, time_temp_vals, on=['Room #']).fillna(0)
-print(all_temp_data)
+#print(all_temp_data)
 
 all_data = pd.merge(all_temp_data, all_carbon_data, how='outer', on=['Room #']).fillna(0)
-print(all_data.T.index)
+#print(all_data.T.index)  # range of timestamps is 4-7
+
+def convert_datetime(z):
+    if type(z) == str:
+        return z
+    elif type(z) == pd.Timestamp:
+        print(datetime.datetime.strftime(z.to_pydatetime(), '%Y-%m-%d %H:%M:%S'))
+        return datetime.datetime.strftime(z.to_pydatetime(), '%Y-%m-%d %H:%M:%S')
+
+for x in range(0, len(all_data['First Time Too Cold'])):
+    all_data['First Time Too Cold'].iloc[x] = convert_datetime(all_data['First Time Too Cold'].iloc[x])
+    all_data['Last Time Too Cold'].iloc[x] = convert_datetime(all_data['Last Time Too Cold'].iloc[x])
+    all_data['First Time Too Warm'].iloc[x] = convert_datetime(all_data['First Time Too Warm'].iloc[x])
+    all_data['Last Time Too Warm'].iloc[x] = convert_datetime(all_data['Last Time Too Warm'].iloc[x])
+    print(all_data['First Time Too Cold'].iloc[x])
 
 conn = sqlite3.connect(PATH)
 all_data.to_sql("DailyDatabase", conn, if_exists='append')
@@ -104,27 +133,27 @@ with open('basic_weekly.csv', 'w') as weekly_df:
 
 '''
 
-"""
-should be run once a week: clear out daily database and others, or maybe save them to a more permanent database, just to
-clear for the next weekly report.
-"""
+# Daily Clear
 
 
 
-conn = sqlite3.connect(PATH)
-cursor = conn.cursor()
+cursor = conn.cursor()                       
+                                          
+drop = "DROP TABLE ColdDatabase"             
+drop2 = "DROP TABLE WarmDatabase"            
+drop3 = "DROP TABLE CarbonDatabase"          
+drop4 = "DROP TABLE LowCarbonDatabase"       
+                                             
+cursor.execute(drop)                         
+cursor.execute(drop2)                        
+cursor.execute(drop3)                        
+cursor.execute(drop4)                        
+                                             
+conn.close()                                 
+                     
 
-drop = "DROP TABLE ColdDatabase"
-drop2 = "DROP TABLE WarmDatabase"
-drop3 = "DROP TABLE CarbonDatabase"
-drop4 = "DROP TABLE LowCarbonDatabase"
 
-cursor.execute(drop)
-cursor.execute(drop2)
-cursor.execute(drop3)
-cursor.execute(drop4)
 
-conn.close()
 
 
 

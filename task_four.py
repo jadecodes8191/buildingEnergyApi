@@ -1,11 +1,14 @@
 # to be run every week: takes in data from task three and further aggregates it to get a cohesive weekly report.
 
 import sqlite3
+
+import datetime as datetime
 import sqlalchemy
 import pandas as pd
 import numpy as np
 import csv
 import openpyxl
+import datetime
 
 PATH = 'my_file'
 
@@ -14,6 +17,22 @@ daily_data = pd.read_sql_table("DailyDatabase", engine)
 daily_data['Days With Problems'] = None
 all_temps = pd.read_sql_table("DailyTempDatabase", engine)
 all_carbon = pd.read_sql_table("DailyCarbonDatabase", engine)
+
+
+def convert_back(z):
+    if z == "N/A":
+        return np.NaN
+    elif z is not None:
+        return datetime.datetime.strptime(z, "%Y-%m-%d %H:%M:%S")
+    else:
+        return None
+
+for x in range(0, len(daily_data['First Time Too Cold'])):
+    #print(daily_data)
+    daily_data['First Time Too Cold'].loc[x] = convert_back(daily_data['First Time Too Cold'].loc[x])
+    daily_data['Last Time Too Cold'].loc[x] = convert_back(daily_data['Last Time Too Cold'].loc[x])
+    daily_data['First Time Too Warm'].loc[x] = convert_back(daily_data['First Time Too Warm'].loc[x])
+    daily_data['Last Time Too Warm'].loc[x] = convert_back(daily_data['Last Time Too Warm'].loc[x])
 
 all_temps['Median Temperature'] = all_temps['Temperature']
 all_temps['Mean Temperature'] = all_temps['Temperature']
@@ -25,6 +44,13 @@ all_carbon['Mean CO2'] = all_carbon['CO2']
 co2_analysis = all_carbon.groupby("Room #").agg({"Mean CO2" : np.mean,
                                        "Median CO2" : np.median})
 
+# Time Testing
+my_timestamps = ['2019-11-14 00:00:00', '2019-11-14 00:01:02', '2019-11-13 00:00:05', '2019-11-12 10:23:07']
+for x in range(0, len(my_timestamps)):
+    my_timestamps[x] = (pd.to_datetime(my_timestamps[x]) - datetime.timedelta(0))
+print(np.min(my_timestamps))
+print(np.max(my_timestamps))
+# End of Time Testing - produces accurate result with extra functionality, won't work without some conversions
 
 daily_data = daily_data.groupby("Room #").agg({"Days With Problems": np.size,
                                                "Intervals Too Warm" : np.sum,
