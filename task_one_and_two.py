@@ -120,10 +120,10 @@ df = df.append(my_sixth_test_room, ignore_index=True)
 
 df = df.set_index('Room #')
 
-#comment out permanent database for now
-#engine = sqlalchemy.create_engine('sqlite:///' + PATH)
-#conn = sqlite3.connect(PATH)
-#df.to_sql("TempAndCO2Log", conn, if_exists='append')
+# I had commented out the permanent database for testing, but it's back now
+engine = sqlalchemy.create_engine('sqlite:///' + PATH)
+conn = sqlite3.connect(PATH)
+df.to_sql("TempAndCO2Log", conn, if_exists='append')
 
 # Carbon Dioxide minimum is calculated by subtracting 20 from the outside levels
 outside = df.loc['Outside Air']
