@@ -1,4 +1,4 @@
-# Building Energy API
+# Building Energy API + Weekly Report Software
 
 This is the home of the code for my work with Energize Andover! (forked from the original Energize repo)
 
