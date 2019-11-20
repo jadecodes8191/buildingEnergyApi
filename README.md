@@ -2,7 +2,7 @@
 
 This is the home of the code for my work with Energize Andover! (forked from the original Energize repo)
 
-Main files to take a look at:
+Main files to take a look at, which display the steps I took towards having a full weekly report of problematic rooms:
 
 - problemareascron.py, cold_rooms.py, warm_rooms.py, carbon_rooms.py and all related CSV files
   - This system uses schoolwide sensors to get temperature and CO2 data, which it then writes to a temporary CSV file (ahs_air_data).
