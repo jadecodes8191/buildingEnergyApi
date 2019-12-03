@@ -12,5 +12,5 @@ Main files to take a look at, which display the steps I took towards having a fu
 - basic_weekly_report.py and basic_weekly.csv
   - This is a very simple version of a weekly report -- for each room that logs as having problems during the week, this produces the number of intervals at which the room was too warm, too cold, and had too much carbon dioxide throughout the week.
   
-- task_one_and_two, task_three, and task_four
-  - This is the more in-depth version of the weekly report, which both makes use of databases and aggregates the data more systematically (first per day, and then per week), while storing the raw data to allow for more flexibility and use cases. It includes additional data, such as the mean and median temperature and carbon dioxide, as well as the first and last times certain issues were recorded for a room. 
+- task_one_and_two, task_three, task_four, and task_five
+  - This is the more in-depth version of the weekly report, which both makes use of databases and aggregates the data more systematically (first per day, and then per week), while storing the raw data to allow for more flexibility and use cases. It includes additional data, such as the mean and median temperature and carbon dioxide, as well as the first and last times certain issues were recorded for a room. It should then send off the final weekly report (as an Excel file) to a mailing list.
