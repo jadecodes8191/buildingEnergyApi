@@ -1,0 +1,7 @@
+The exact content of what is in the crontab.
+
+*/15 7, 8, 9, 10, 11, 12, 13, 14 * * * /home/ea/.pyenv/versions/report-venv/bin/python task_one_and_two.py
+
+* 23 * * * /home/ea/.pyenv/versions/report-venv/bin/python task_three.py
+
+* 1 * * 1 /home/ea/.pyenv/versions/report-venv/bin/python task_four.py
