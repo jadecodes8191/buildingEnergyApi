@@ -2,13 +2,11 @@
 
 import sqlite3
 
-import datetime as datetime
 import sqlalchemy
 import pandas as pd
 import numpy as np
-import csv
-import openpyxl
 import datetime
+import openpyxl
 
 PATH = 'my_file'
 

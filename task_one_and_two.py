@@ -11,7 +11,6 @@ import time
 from building_data_requests import get_bulk
 import numbers
 import csv
-from crontab import CronTab
 
 temp_min = 65
 temp_units = "deg F"
@@ -28,8 +27,8 @@ start_time = time.time()
 #   - Instance ID of CO2 sensor
 #   - Instance ID of temperature sensor
 
-#/media/ea/Data/Students/jade/buildingEnergyApi/
-df = pd.read_csv('ahs_air.csv', na_filter=False, comment='#' )
+#
+df = pd.read_csv('/media/ea/Data/Students/jade/buildingEnergyApi/ahs_air.csv', na_filter=False, comment='#' )
 # This file location doesn't work on the server (see above file path) --> be careful
 
 # Initialize empty bulk request
@@ -56,7 +55,7 @@ map = bulk_rsp['rsp_map']
 # writes to a new csv file, so we can use pandas on the real-time data
 
 # this file location ALSO DOESN'T WORK ON THE SERVER ---> add in that path /media/ea/Data/Students/jade/buildingEnergyApi/
-with open('ahs_air_data.csv', mode='w') as ahs_air_data:
+with open('/media/ea/Data/Students/jade/buildingEnergyApi/ahs_air_data.csv', mode='w') as ahs_air_data:
     temp_writer = csv.writer(ahs_air_data, delimiter=";")
     # Iterate over the rows of the dataframe, displaying temperature and CO2 values extracted from map
     for index, row in df.iterrows():
@@ -99,7 +98,7 @@ PATH = 'my_file'
 # ^this works on the server also
 
 # Log raw data into permanent database
-df = pd.read_csv('ahs_air_data.csv', names=['Timestamp', 'Room #', 'Temperature', 'Temp. Units', 'CO2', 'CO2 Units'])
+df = pd.read_csv('/media/ea/Data/Students/jade/buildingEnergyApi/ahs_air_data.csv', names=['Timestamp', 'Room #', 'Temperature', 'Temp. Units', 'CO2', 'CO2 Units'])
 
 # Time Testing Cont'd. (not real rooms, unrealistic values should indicate if these get into any permanent databases, but they shouldn't
 '''
