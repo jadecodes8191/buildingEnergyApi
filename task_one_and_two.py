@@ -28,7 +28,10 @@ start_time = time.time()
 #   - Instance ID of temperature sensor
 
 #
-df = pd.read_csv('/media/ea/Data/Students/jade/buildingEnergyApi/ahs_air.csv', na_filter=False, comment='#' )
+
+SERVER_PATH = '' #'/media/ea/Data/Students/jade/buildingEnergyApi/'
+
+df = pd.read_csv(SERVER_PATH + 'ahs_air.csv', na_filter=False, comment='#' )
 # This file location doesn't work on the server (see above file path) --> be careful
 
 # Initialize empty bulk request
@@ -55,7 +58,7 @@ map = bulk_rsp['rsp_map']
 # writes to a new csv file, so we can use pandas on the real-time data
 
 # this file location ALSO DOESN'T WORK ON THE SERVER ---> add in that path /media/ea/Data/Students/jade/buildingEnergyApi/
-with open('/media/ea/Data/Students/jade/buildingEnergyApi/ahs_air_data.csv', mode='w') as ahs_air_data:
+with open(SERVER_PATH + 'ahs_air_data.csv', mode='w') as ahs_air_data:
     temp_writer = csv.writer(ahs_air_data, delimiter=";")
     # Iterate over the rows of the dataframe, displaying temperature and CO2 values extracted from map
     for index, row in df.iterrows():
@@ -98,10 +101,10 @@ PATH = 'my_file'
 # ^this works on the server also
 
 # Log raw data into permanent database
-df = pd.read_csv('/media/ea/Data/Students/jade/buildingEnergyApi/ahs_air_data.csv', names=['Timestamp', 'Room #', 'Temperature', 'Temp. Units', 'CO2', 'CO2 Units'])
+df = pd.read_csv(SERVER_PATH + 'ahs_air_data.csv', names=['Timestamp', 'Room #', 'Temperature', 'Temp. Units', 'CO2', 'CO2 Units'])
 
 # Time Testing Cont'd. (not real rooms, unrealistic values should indicate if these get into any permanent databases, but they shouldn't
-'''
+
 my_test_room = pd.Series(['Sun Nov 10 17:00:00 2019', '000', -890, 'deg C', -30, 'ppm'], index=df.T.index)
 my_second_test_room = pd.Series(['Wed Nov 6 16:00:00 2019', '543', -800, 'deg C', -8080, 'ppm'], index=df.T.index)
 my_third_test_room = pd.Series(['Mon Nov 11 16:00:00 2019', '000', -990, 'deg C', -50, 'ppm'], index=df.T.index)
@@ -115,14 +118,14 @@ df = df.append(my_third_test_room, ignore_index=True)
 df = df.append(my_fourth_test_room, ignore_index=True)
 df = df.append(my_fifth_test_room, ignore_index=True)
 df = df.append(my_sixth_test_room, ignore_index=True)
-'''
+
 
 df = df.set_index('Room #')
 
 # I had commented out the permanent database for testing, but it's back now
-engine = sqlalchemy.create_engine('sqlite:///' + PATH)
-conn = sqlite3.connect(PATH)
-df.to_sql("TempAndCO2Log", conn, if_exists='append')
+#engine = sqlalchemy.create_engine('sqlite:///' + PATH)
+#conn = sqlite3.connect(PATH)
+#df.to_sql("TempAndCO2Log", conn, if_exists='append')
 
 # Carbon Dioxide minimum is calculated by subtracting 20 from the outside levels
 outside = df.loc['Outside Air']

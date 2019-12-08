@@ -1,4 +1,5 @@
 # to be run each day: collects problems from task two and aggregates them into daily issue areas.
+# this version doesn't work currently -- making a branch for large scale edits
 
 import datetime
 import sqlalchemy
@@ -17,6 +18,7 @@ carbon_data = pd.read_sql_table("CarbonDatabase", engine)
 low_carbon_data = pd.read_sql_table("LowCarbonDatabase", engine)
 
 # Convert times to integers so that they compare accurately
+# Not necessary, actually... right?
 for x in range(0, len(cold_data['Timestamp'])):
     cold_data['Timestamp'].loc[x] = (pd.to_datetime(cold_data['Timestamp'].loc[x]) - datetime.timedelta(0))
 for x in range(0, len(warm_data['Timestamp'])):
@@ -27,21 +29,31 @@ for x in range(0, len(low_carbon_data['Timestamp'])):
     low_carbon_data['Timestamp'].loc[x] = (pd.to_datetime(low_carbon_data['Timestamp'].loc[x]) - datetime.timedelta(0))
 
 
-# Creates copies such that we can do different kinds of analysis on different copies
-cold_data_copy = cold_data.copy()
-warm_data_copy = warm_data.copy()
-carbon_data_copy = carbon_data.copy()
-low_carbon_data_copy = low_carbon_data.copy()
+#print(cold_data)
+#print(warm_data)
+time_cold = cold_data.copy().set_index("Temperature")
+time_warm = warm_data.copy().set_index("Temperature")
+time_carbon = carbon_data.copy().set_index("CO2")
+time_lowcarbon = low_carbon_data.copy().set_index('CO2')
 
+#This version tries to work without the copies, instead streamlining the process on only the main four dataframes.
+#cold_data_copy = cold_data.copy()
+#warm_data_copy = warm_data.copy()
+#carbon_data_copy = carbon_data.copy()
+#low_carbon_data_copy = low_carbon_data.copy()
+
+'''
 # Sets up timestamp piece -- first/last time too cold/warm
-cold_data_copy['First Time Too Cold'] = cold_data_copy['Timestamp']
-cold_data_copy['Last Time Too Cold'] = cold_data_copy['Timestamp']
-warm_data_copy['First Time Too Warm'] = warm_data_copy['Timestamp']
-warm_data_copy['Last Time Too Warm'] = warm_data_copy['Timestamp']
-carbon_data_copy['First Time Too Much CO2'] = carbon_data_copy['Timestamp']
-carbon_data_copy['Last Time Too Much CO2'] = carbon_data_copy['Timestamp']
-low_carbon_data_copy['First Time Too Little CO2'] = low_carbon_data_copy['Timestamp']
-low_carbon_data_copy['Last Time Too Little CO2'] = low_carbon_data_copy['Timestamp']
+cold_data['First Time Too Cold'] = cold_data['Timestamp']
+cold_data['Last Time Too Cold'] = cold_data['Timestamp']
+warm_data['First Time Too Warm'] = warm_data['Timestamp']
+warm_data['Last Time Too Warm'] = warm_data['Timestamp']
+carbon_data['First Time Too Much CO2'] = carbon_data['Timestamp']
+carbon_data['Last Time Too Much CO2'] = carbon_data['Timestamp']
+low_carbon_data['First Time Too Little CO2'] = low_carbon_data['Timestamp']
+low_carbon_data['Last Time Too Little CO2'] = low_carbon_data['Timestamp']
+
+'''
 
 # Time Testing
 # print(cold_data_copy['First Time Too Cold'])
@@ -50,13 +62,97 @@ low_carbon_data_copy['Last Time Too Little CO2'] = low_carbon_data_copy['Timesta
 # print(np.min(["Sun Nov 10 17:00:00 2019", "Wed Nov 6 16:00:00 2019"]))
 # but this only happens when i put it in the pandas format -- in other formats it was calculating correctly
 
-cold_with_times = cold_data_copy.groupby("Room #").agg({'First Time Too Cold': np.min, 'Last Time Too Cold': np.max})
-warm_with_times = warm_data_copy.groupby("Room #").agg({'First Time Too Warm': np.min, 'Last Time Too Warm': np.max})
-carbon_with_times = carbon_data_copy.groupby('Room #').agg({'First Time Too Much CO2': np.min, 'Last Time Too Much CO2': np.max})
-low_carbon_with_times = low_carbon_data_copy.groupby('Room #').agg({'First Time Too Little CO2': np.min, 'Last Time Too Little CO2': np.max})
+warm_data['Intervals Too Warm'] = None
+cold_data['Intervals Too Cold'] = None
+carbon_data['Intervals Too Much CO2'] = None
+low_carbon_data['Intervals Too Little CO2'] = None
 
-time_temp_vals = pd.merge(cold_with_times, warm_with_times, how='outer', on=['Room #']).fillna("N/A")
-time_carbon_vals = pd.merge(carbon_with_times, low_carbon_with_times, how='outer', on=['Room #']).fillna("N/A")
+warm_data['Highest Temperature'] = warm_data['Temperature']
+warm_data['Lowest Temperature'] = warm_data['Temperature']
+cold_data['Lowest Temperature'] = cold_data['Temperature']
+cold_data['Highest Temperature'] = cold_data['Temperature']
+carbon_data['Highest CO2'] = carbon_data['CO2']
+carbon_data['Lowest CO2'] = carbon_data['CO2']
+low_carbon_data['Lowest CO2'] = carbon_data['CO2']
+low_carbon_data['Highest CO2'] = carbon_data['CO2']
+
+# CENTRAL GROUPBY STATEMENT
+
+# All grouping & analysis should actually be done HERE
+
+
+cold_data = cold_data.groupby("Room #").agg({'Lowest Temperature': np.min,
+                                             'Highest Temperature': np.max,
+                                             'Intervals Too Cold': np.size})
+warm_data = warm_data.groupby("Room #").agg({'Highest Temperature': np.max,
+                                             "Lowest Temperature": np.min,
+                                             'Intervals Too Warm': np.size})
+carbon_data = carbon_data.groupby('Room #').agg({'Highest CO2': np.max,
+                                                 'Lowest CO2': np.min,
+                                                 'Intervals Too Much CO2': np.size})
+low_carbon_data = low_carbon_data.groupby('Room #').agg({'Lowest CO2': np.min,
+                                                         'Highest CO2': np.max,
+                                                         'Intervals Too Little CO2': np.size})
+
+
+#unless they're done AFTER the merge...
+
+#CENTRAL MERGE STATEMENTS
+all_temps = pd.merge(warm_data, cold_data, how='outer', on=['Room #'])
+all_temps = all_temps.groupby(level=0, axis=1).max()
+all_carbon = pd.merge(carbon_data, low_carbon_data, how='outer', on=['Room #'])
+all_carbon = all_carbon.groupby(level=0, axis=1).max()
+
+
+print(all_temps)
+print(all_carbon)
+
+all_data = pd.merge(all_temps, all_carbon, how='outer', on=['Room #'])
+
+# go back into time database (copied from original database) and locate timestamps
+all_data['Lowest Temperature Time'] = None
+all_data['Highest Temperature Time'] = None
+all_data['Highest CO2 Time'] = None
+all_data['Lowest CO2 Time'] = None
+
+for room in all_data.index:
+    temp_temp = all_data['Lowest Temperature'][room]
+    print("Original Value: " + str(temp_temp) + "\n")
+    if not (np.isnan(temp_temp)):
+        temp_temp = int(temp_temp)
+        temp_time = time_cold.loc[temp_temp].groupby("Room #").agg({"Timestamp":np.min})
+        (all_data.loc[room])['Timestamp'] = temp_time.loc[room]['Timestamp']
+    else:
+        (all_data.loc[room])['Lowest Temperature Time'] = np.nan
+    temp_temp = all_data['Highest Temperature'][room]
+    print("Original Value: " + str(temp_temp) + "\n")
+    if not (np.isnan(temp_temp)):
+        temp_temp = int(temp_temp)
+        temp_time = time_warm.loc[temp_temp].groupby("Room #").agg({"Timestamp":np.min})
+        (all_data.loc[room])['Timestamp'] = temp_time.loc[room]['Timestamp']
+    else:
+        (all_data.loc[room])['Highest Temperature Time'] = np.nan
+    temp_co2 = all_data['Highest CO2'][room]
+    print("Original Value: " + str(temp_co2) + "\n")
+    if not (np.isnan(temp_co2)):
+        #temp_co2 = int(temp_co2)
+        temp_time = time_carbon.loc[temp_co2].groupby("Room #").agg({"Timestamp":np.min})
+        (all_data.loc[room])['Timestamp'] = temp_time.loc[room]['Timestamp']
+    else:
+        (all_data.loc[room])['Highest CO2 Time'] = np.nan
+    temp_co2 = all_data['Lowest CO2'][room]
+    print("Original Value: " + str(temp_co2) + "\n")
+    if not (np.isnan(temp_co2)):
+        #temp_co2 = int(temp_co2)
+        print(time_lowcarbon.index)
+        temp_time = time_lowcarbon.loc[temp_co2].groupby("Room #").agg({"Timestamp":np.min})
+        (all_data.loc[room])['Timestamp'] = temp_time.loc[room]['Timestamp']
+    else:
+        (all_data.loc[room])['Lowest CO2 Time'] = np.nan
+
+#merge later
+#time_temp_vals = pd.merge(cold_with_times, warm_with_times, how='outer', on=['Room #']).fillna("N/A")
+#time_carbon_vals = pd.merge(carbon_with_times, low_carbon_with_times, how='outer', on=['Room #']).fillna("N/A")
 # all_times = pd.merge(time_temp_vals, time_carbon_vals, how='outer', on=['Room #']).fillna("N/A")
 
 '''
@@ -70,25 +166,14 @@ print(carbonest)
 nice data to have, but NOT part of the required weekly report.
 
 '''
+'''
 # ORIGINAL VERSION (used for interval counting):
 
-warm_data['Intervals Too Warm'] = None
-cold_data['Intervals Too Cold'] = None
-carbon_data['Intervals Too Much CO2'] = None
-low_carbon_data['Intervals Too Little CO2'] = None
-
-warm_data = warm_data.groupby("Room #").agg({'Intervals Too Warm': np.size})
-cold_data = cold_data.groupby("Room #").agg({'Intervals Too Cold': np.size})
-carbon_data = carbon_data.groupby("Room #").agg({'Intervals Too Much CO2': np.size})
-low_carbon_data = low_carbon_data.groupby("Room #").agg({'Intervals Too Little CO2': np.size})
-
-temp_vals = pd.merge(warm_data, cold_data, how='outer', on=['Room #'])
-carbon_vals = pd.merge(carbon_data, low_carbon_data, how='outer', on=['Room #'])
 
 # COPY VERSION (used for high/low temps):
 
-cold_data_copy = cold_data_copy.drop('index', axis=1)
-warm_data_copy = warm_data_copy.drop('index', axis=1)
+#cold_data_copy = cold_data_copy.drop('index', axis=1)
+#warm_data_copy = warm_data_copy.drop('index', axis=1)
 
 temp_vals_copy = pd.merge(warm_data_copy, cold_data_copy, how='outer', on=['Room #', 'Temperature', 'CO2'])
 temp_vals_copy['Highest Temperature'] = temp_vals_copy['Temperature']
@@ -139,6 +224,8 @@ for x in range(0, len(all_data['First Time Too Cold'])):
 
     print(all_data['First Time Too Cold'].iloc[x])
 
+'''
+
 conn = sqlite3.connect(PATH)
 all_data.to_sql("DailyDatabase", conn, if_exists='append')
 all_temps.to_sql("DailyTempDatabase", conn, if_exists='append')
@@ -156,7 +243,9 @@ with open('basic_weekly.csv', 'w') as weekly_df:
 
 '''
 
-# Daily Clear
+# Daily Clear -- commented out for testing
+'''
+
 
 cursor = conn.cursor()                       
                                           
@@ -171,3 +260,4 @@ cursor.execute(drop3)
 cursor.execute(drop4)                        
                                              
 conn.close()
+'''
