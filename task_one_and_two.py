@@ -133,7 +133,7 @@ co2_min = outside['CO2'] - 20
 
 # TASK TWO BEGINS HERE: analysis of problem rooms at each interval
 
-# creates a sort of copy for analysis/Task 2
+# creates a "sort" of copy for analysis/Task 2
 new_data = df.sort_values(by='Room #').reset_index()
 print("Full CSV: ")
 print(new_data)
@@ -142,23 +142,34 @@ print(new_data)
 
 conn = sqlite3.connect(PATH)
 
+
+def check_temp(x):
+    print("Start of x:")
+    print(x)
+    if x['Temperature'] > temp_max:
+        return True
+    return False
+
+
+def check_carbon(x):
+    if x['CO2'] > co2_max:
+        return True
+    return False
+
+
 # print("\nToo Cold: \n")
-cold_data = new_data[new_data.Temperature < temp_min][['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by="Temperature", ascending=True)
-print(cold_data)
-cold_data.to_sql("ColdDatabase", conn, if_exists='append')
+temp_data = new_data[(new_data['Temperature'] < temp_min) | (new_data['Temperature'] > temp_max)]
+temp_data = temp_data[['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by="Temperature", ascending=True)
+temp_data['High Temp?'] = temp_data.T.apply(check_temp)
+print(temp_data)
+temp_data.to_sql("TemperatureProblemsDatabase", conn, if_exists='append')
 
 # print("\nToo Much CO2: \n")
-carbon_data = new_data[new_data.CO2 > co2_max][['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
-carbon_data.to_sql("CarbonDatabase", conn, if_exists='append')
-
-# print("\nToo Little CO2: \n")
-less_carbon_data = new_data[new_data.CO2 < co2_min][['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by='CO2', ascending=True)
-less_carbon_data.to_sql("LowCarbonDatabase", conn, if_exists='append')
-
-# print("\nToo Hot: \n")
-warm_data = new_data[new_data.Temperature > temp_max][['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by='Temperature')
-warm_data.to_sql("WarmDatabase", conn, if_exists='append')
+carbon_data = new_data[(new_data.CO2 > co2_max) | (new_data.CO2 < co2_min)][['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
+carbon_data['High Carbon?'] = carbon_data.T.apply(check_carbon)
+carbon_data.to_sql("CarbonDioxideProblemsDatabase", conn, if_exists='append')
 
 # Report elapsed time
 elapsed_time = round( ( time.time() - start_time ) * 1000 ) / 1000
 print( '\nElapsed time: {0} seconds'.format( elapsed_time ) )
+
