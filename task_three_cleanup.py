@@ -16,7 +16,7 @@ temp_data = pd.read_sql_table("TemperatureProblemsDatabase", engine)
 co2_data = pd.read_sql_table("CarbonDioxideProblemsDatabase", engine)
 
 # Convert times to integers so that they compare accurately
-# Not necessary, actually... right?
+
 for x in range(0, len(temp_data['Timestamp'])):
     temp_data['Timestamp'].loc[x] = (pd.to_datetime(temp_data['Timestamp'].loc[x]) - datetime.timedelta(0))
 for x in range(0, len(co2_data['Timestamp'])):
@@ -65,6 +65,41 @@ co2_data = co2_data.groupby('Room #').agg({'Highest CO2': np.max,
 all_data = pd.merge(temp_data, co2_data, how='outer', on=['Room #'])
 
 # go back into time database (copied from original database) and locate timestamps
+
+all_data['First Time Too Cold'] = None
+all_data['First Time Too Warm'] = None
+all_data['Last Time Too Cold'] = None
+all_data['Last Time Too Warm'] = None
+
+for room in time_temp.index:
+    room_number = room[0]
+    temp_df = time_temp.loc[room_number]
+    temp_df['First Time'] = temp_df['Timestamp']
+    temp_df['Last Time'] = temp_df['Timestamp']
+    temp_df = temp_df.groupby("High Temp?").agg({"First Time": np.min, "Last Time": np.max})
+    early_times = temp_df['First Time']
+    if len(early_times) == 1:
+        if early_times.index[0] == 0:
+            all_data['First Time Too Cold'][room_number] = early_times.iloc[0]
+        else:
+            all_data['First Time Too Warm'][room_number] = early_times.iloc[0]
+    elif len(early_times) == 2:
+        print(early_times)
+        all_data['First Time Too Cold'][room_number] = early_times.iloc[0]
+        all_data['First Time Too Warm'][room_number] = early_times.iloc[1]
+        # make sure data is sorted before this happens!!! I think it is because of the groupby
+    late_times = temp_df['Last Time']
+    if len(late_times) == 1:
+        if late_times.index[0] == 0:
+            all_data['Last Time Too Cold'][room_number] = late_times.iloc[0]
+        else:
+            all_data['Last Time Too Warm'][room_number] = late_times.iloc[0]
+    elif len(late_times) == 2:
+        print(late_times)
+        all_data['Last Time Too Cold'][room_number] = late_times[0]
+        all_data['Last Time Too Warm'][room_number] = late_times[1]
+        # make sure data is sorted before this happens!!! I think it is because of the groupby
+
 all_data['Lowest Temperature Time'] = None
 all_data['Highest Temperature Time'] = None
 all_data['Highest CO2 Time'] = None
@@ -99,6 +134,8 @@ print(all_data['Lowest Temperature Time'])
 print(all_data['Highest Temperature Time'])
 print(all_data['Lowest CO2 Time'])
 print(all_data['Highest CO2 Time'])
+
+all_data.to_csv('empty.csv')
 
 '''
 for room in all_data.index:
@@ -159,19 +196,17 @@ co2_data.to_sql("DailyCarbonDatabase", conn, if_exists='append')
 
 # Daily Clear -- commented out for testing
 
-
 '''
+conn = sqlite3.connect(PATH)
 cursor = conn.cursor()                       
                                           
-drop = "DROP TABLE ColdDatabase"             
-drop2 = "DROP TABLE WarmDatabase"            
-drop3 = "DROP TABLE CarbonDatabase"          
-drop4 = "DROP TABLE LowCarbonDatabase"       
+drop = "DROP TABLE TemperatureProblemsDatabase"
+drop2 = "DROP TABLE CarbonDioxideProblemsDatabase"
                                              
 cursor.execute(drop)                         
-cursor.execute(drop2)                        
-cursor.execute(drop3)                        
-cursor.execute(drop4)                        
+cursor.execute(drop2)
                                              
 conn.close()
 '''
+
+

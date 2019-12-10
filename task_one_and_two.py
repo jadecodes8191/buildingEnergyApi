@@ -104,7 +104,7 @@ PATH = 'my_file'
 df = pd.read_csv(SERVER_PATH + 'ahs_air_data.csv', names=['Timestamp', 'Room #', 'Temperature', 'Temp. Units', 'CO2', 'CO2 Units'])
 
 # Time Testing Cont'd. (not real rooms, unrealistic values should indicate if these get into any permanent databases, but they shouldn't
-
+'''
 my_test_room = pd.Series(['Sun Nov 10 17:00:00 2019', '000', -890, 'deg C', -30, 'ppm'], index=df.T.index)
 my_second_test_room = pd.Series(['Wed Nov 6 16:00:00 2019', '543', -800, 'deg C', -8080, 'ppm'], index=df.T.index)
 my_third_test_room = pd.Series(['Mon Nov 11 16:00:00 2019', '000', -990, 'deg C', -50, 'ppm'], index=df.T.index)
@@ -118,7 +118,7 @@ df = df.append(my_third_test_room, ignore_index=True)
 df = df.append(my_fourth_test_room, ignore_index=True)
 df = df.append(my_fifth_test_room, ignore_index=True)
 df = df.append(my_sixth_test_room, ignore_index=True)
-
+'''
 
 df = df.set_index('Room #')
 
