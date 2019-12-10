@@ -30,22 +30,8 @@ print("Time Temp")
 print(time_temp)
 # Multi-index should identify uniquely
 
-intervals_temp = temp_data.copy()
-intervals_temp['Intervals Too Warm'] = None
-intervals_temp['Intervals Too Cold'] = None
-intervals_temp = intervals_temp.groupby("High Temp?").agg({"Intervals Too Warm": np.size, "Intervals Too Cold": np.size})
-print(intervals_temp)
-
-intervals_co2 = co2_data.copy()
-intervals_co2['Intervals Too Much CO2'] = None
-intervals_co2['Intervals Too Little CO2'] = None
-intervals_co2 = intervals_co2.groupby("High Carbon?").agg({"Intervals Too Much CO2": np.size, "Intervals Too Little CO2": np.size})
-print(intervals_co2)
-
-temp_data['Intervals Too Warm'] = None
-temp_data['Intervals Too Cold'] = None
-co2_data['Intervals Too Much CO2'] = None
-co2_data['Intervals Too Little CO2'] = None
+td_copy = temp_data.set_index("Room #").T
+cd_copy = co2_data.set_index("Room #").T
 
 temp_data['Highest Temperature'] = temp_data['Temperature']
 temp_data['Lowest Temperature'] = temp_data['Temperature']
@@ -63,6 +49,57 @@ co2_data = co2_data.groupby('Room #').agg({'Highest CO2': np.max,
                                            'Lowest CO2': np.min})
 
 all_data = pd.merge(temp_data, co2_data, how='outer', on=['Room #'])
+
+#INTERVALS
+
+all_data['Intervals Too Cold'] = None
+all_data['Intervals Too Warm'] = None
+all_data['Intervals Too Much CO2'] = None
+all_data['Intervals Too Little CO2'] = None
+
+for room in td_copy:
+    print("ROOM: ")
+    print(room)
+    intervals_temp = td_copy[room].T
+    intervals_temp['Intervals'] = None
+    intervals_temp = intervals_temp.groupby("High Temp?").agg({"Intervals": np.size})
+    print("Temp Intervals: ")
+    print(intervals_temp)
+    if len(intervals_temp) == 1:
+        if intervals_temp.index[0] == 0:
+            all_data['Intervals Too Cold'][room] = (intervals_temp.iloc[0])[0]
+        else:
+            all_data['Intervals Too Warm'][room] = (intervals_temp.iloc[0])[0]
+    elif len(intervals_temp) == 2:
+        all_data['Intervals Too Cold'][room] = (intervals_temp.iloc[0])[0]
+        all_data['Intervals Too Warm'][room] = (intervals_temp.iloc[1])[0]
+
+for room in cd_copy:
+    print("ROOM: ")
+    print(room)
+    intervals_co2 = cd_copy[room].T
+    intervals_co2['Intervals'] = None
+    intervals_co2 = intervals_co2.groupby("High Carbon?").agg({"Intervals": np.size})
+    print("CO2 Intervals: ")
+    print(intervals_co2)
+    if len(intervals_co2) == 1:
+        if intervals_co2.index[0] == 0:
+            all_data['Intervals Too Little CO2'][room] = (intervals_co2.iloc[0])[0]
+        else:
+            all_data['Intervals Too Much CO2'][room] = (intervals_co2.iloc[0])[0]
+    elif len(intervals_co2) == 2:
+        all_data['Intervals Too Little CO2'][room] = (intervals_co2.iloc[0])[0]
+        all_data['Intervals Too Much CO2'][room] = (intervals_co2.iloc[1])[0]
+
+temp_data['Intervals Too Warm'] = None
+temp_data['Intervals Too Cold'] = None
+co2_data['Intervals Too Much CO2'] = None
+co2_data['Intervals Too Little CO2'] = None
+
+
+#END OF INTERVAL CODE
+
+
 
 # go back into time database (copied from original database) and locate timestamps
 
