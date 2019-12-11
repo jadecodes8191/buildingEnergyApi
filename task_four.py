@@ -14,6 +14,7 @@ engine = sqlalchemy.create_engine('sqlite:///' + PATH)
 daily_data = pd.read_sql_table("DailyDatabase", engine)
 daily_data['Days With Problems'] = None
 all_temps = pd.read_sql_table("DailyTempDatabase", engine)
+all_temps.to_csv("weekly.csv")
 all_carbon = pd.read_sql_table("DailyCarbonDatabase", engine)
 
 
@@ -25,16 +26,12 @@ def convert_back(z):
     else:
         return None
 
+
 for x in range(0, len(daily_data['First Time Too Cold'])):
-    #print(daily_data)
     daily_data['First Time Too Cold'].loc[x] = convert_back(daily_data['First Time Too Cold'].loc[x])
     daily_data['Last Time Too Cold'].loc[x] = convert_back(daily_data['Last Time Too Cold'].loc[x])
     daily_data['First Time Too Warm'].loc[x] = convert_back(daily_data['First Time Too Warm'].loc[x])
     daily_data['Last Time Too Warm'].loc[x] = convert_back(daily_data['Last Time Too Warm'].loc[x])
-    daily_data['First Time Too Much CO2'].loc[x] = convert_back(daily_data['First Time Too Much CO2'].loc[x])
-    daily_data['Last Time Too Much CO2'].loc[x] = convert_back(daily_data['Last Time Too Much CO2'].loc[x])
-    daily_data['First Time Too Little CO2'].loc[x] = convert_back(daily_data['First Time Too Little CO2'].loc[x])
-    daily_data['Last Time Too Little CO2'].loc[x] = convert_back(daily_data['Last Time Too Little CO2'].loc[x])
 
 all_temps['Median Temperature'] = all_temps['Temperature']
 all_temps['Mean Temperature'] = all_temps['Temperature']
@@ -90,6 +87,8 @@ clear for the next weekly report.
 another_csv_file = pd.read_csv("basic_weekly.csv")
 print(another_csv_file)
 
+'''
+Commented out for testing: Should add back in after testing
 
 PATH = 'my_file'
 
@@ -105,5 +104,8 @@ cursor.execute(drop2)
 cursor.execute(drop3)
 
 conn.close()
+
+
+'''
 
 

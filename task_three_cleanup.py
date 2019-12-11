@@ -6,7 +6,6 @@ import sqlalchemy
 import pandas as pd
 import sqlite3
 import numpy as np
-import csv
 
 PATH = 'my_file'
 
@@ -91,15 +90,7 @@ for room in cd_copy:
         all_data['Intervals Too Little CO2'][room] = (intervals_co2.iloc[0])[0]
         all_data['Intervals Too Much CO2'][room] = (intervals_co2.iloc[1])[0]
 
-temp_data['Intervals Too Warm'] = None
-temp_data['Intervals Too Cold'] = None
-co2_data['Intervals Too Much CO2'] = None
-co2_data['Intervals Too Little CO2'] = None
-
-
-#END OF INTERVAL CODE
-
-
+# END OF INTERVAL CODE
 
 # go back into time database (copied from original database) and locate timestamps
 
@@ -124,7 +115,7 @@ for room in time_temp.index:
         print(early_times)
         all_data['First Time Too Cold'][room_number] = early_times.iloc[0]
         all_data['First Time Too Warm'][room_number] = early_times.iloc[1]
-        # make sure data is sorted before this happens!!! I think it is because of the groupby
+        # make sure data is sorted before this happens!!! I think it is sorted because of the groupby
     late_times = temp_df['Last Time']
     if len(late_times) == 1:
         if late_times.index[0] == 0:
@@ -135,101 +126,64 @@ for room in time_temp.index:
         print(late_times)
         all_data['Last Time Too Cold'][room_number] = late_times[0]
         all_data['Last Time Too Warm'][room_number] = late_times[1]
-        # make sure data is sorted before this happens!!! I think it is because of the groupby
+        # make sure data is sorted before this happens!!! I think it is sorted because of the groupby
 
 all_data['Lowest Temperature Time'] = None
 all_data['Highest Temperature Time'] = None
 all_data['Highest CO2 Time'] = None
 all_data['Lowest CO2 Time'] = None
+temp_data['Lowest Temperature Time'] = None
+temp_data['Highest Temperature Time'] = None
+co2_data['Lowest CO2 Time'] = None
+co2_data['Highest CO2 Time'] = None
+
+
+def convert_datetime(z):
+    if type(z) == str:
+        return z
+    elif type(z) == pd.Timestamp:
+        print(type(datetime.datetime.strftime(z.to_pydatetime(), '%Y-%m-%d %H:%M:%S')))
+        return datetime.datetime.strftime(z.to_pydatetime(), '%Y-%m-%d %H:%M:%S')
+
 
 for room in time_temp.index:
     low_temps = time_temp.loc[room[0]].loc[all_data['Lowest Temperature'][room[0]]]['Timestamp']
     high_temps = time_temp.loc[room[0]].loc[all_data['Highest Temperature'][room[0]]]['Timestamp']
     if type(low_temps) == pd.Series:
-        all_data['Lowest Temperature Time'][room[0]] = low_temps.iloc[0]
+        all_data['Lowest Temperature Time'][room[0]] = convert_datetime(low_temps.iloc[0])
     else:
-        all_data['Lowest Temperature Time'][room[0]] = low_temps
+        all_data['Lowest Temperature Time'][room[0]] = convert_datetime(low_temps)
     if type(high_temps) == pd.Series:
-        all_data['Highest Temperature Time'][room[0]] = high_temps.iloc[0]
+        all_data['Highest Temperature Time'][room[0]] = convert_datetime(high_temps.iloc[0])
     else:
-        all_data['Highest Temperature Time'][room[0]] = high_temps
+        all_data['Highest Temperature Time'][room[0]] = convert_datetime(high_temps)
+    temp_data['Lowest Temperature Time'][room[0]] = all_data['Lowest Temperature Time'][room[0]]
+    temp_data['Highest Temperature Time'][room[0]] = all_data['Highest Temperature Time'][room[0]]
 
 for room in time_co2.index:
     low_co2 = time_co2.loc[room[0]].loc[all_data['Lowest CO2'][room[0]]]['Timestamp']
     high_co2 = time_co2.loc[room[0]].loc[all_data['Highest CO2'][room[0]]]['Timestamp']
     if type(low_co2) == pd.Series:
-        all_data['Lowest CO2 Time'][room[0]] = low_co2.iloc[0]
+        all_data['Lowest CO2 Time'][room[0]] = convert_datetime(low_co2.iloc[0])
     else:
-        all_data['Lowest CO2 Time'][room[0]] = low_co2
+        all_data['Lowest CO2 Time'][room[0]] = convert_datetime(low_co2)
     if type(high_co2) == pd.Series:
-        all_data['Highest CO2 Time'][room[0]] = high_co2.iloc[0]
+        all_data['Highest CO2 Time'][room[0]] = convert_datetime(high_co2.iloc[0])
     else:
-        all_data['Highest CO2 Time'][room[0]] = high_co2
-
-
-print(all_data['Lowest Temperature Time'])
-print(all_data['Highest Temperature Time'])
-print(all_data['Lowest CO2 Time'])
-print(all_data['Highest CO2 Time'])
+        all_data['Highest CO2 Time'][room[0]] = convert_datetime(high_co2)
+    co2_data['Lowest CO2 Time'][room[0]] = all_data['Lowest CO2 Time'][room[0]]
+    co2_data['Highest CO2 Time'][room[0]] = all_data['Highest CO2 Time'][room[0]]
 
 all_data.to_csv('empty.csv')
 
 '''
-for room in all_data.index:
-    temp_temp = all_data['Lowest Temperature'][room]
-    print("Original Value: " + str(temp_temp) + "\n")
-    if not (np.isnan(temp_temp)):
-        temp_temp = int(temp_temp)
-        temp_time = time_temp.loc[temp_temp].groupby("Room #").agg({"Timestamp":np.min})
-        (all_data.loc[room])['Timestamp'] = temp_time.loc[room]['Timestamp']
-    else:
-        (all_data.loc[room])['Lowest Temperature Time'] = np.nan
-    temp_temp = all_data['Highest Temperature'][room]
-    print("Original Value: " + str(temp_temp) + "\n")
-    if not (np.isnan(temp_temp)):
-        temp_temp = int(temp_temp)
-        temp_time = time_temp.loc[temp_temp].groupby("Room #").agg({"Timestamp":np.min})
-        (all_data.loc[room])['Timestamp'] = temp_time.loc[room]['Timestamp']
-    else:
-        (all_data.loc[room])['Highest Temperature Time'] = np.nan
-    temp_co2 = all_data['Highest CO2'][room]
-    print("Original Value: " + str(temp_co2) + "\n")
-    if not (np.isnan(temp_co2)):
-        #temp_co2 = int(temp_co2)
-        temp_time = time_co2.loc[temp_co2].groupby("Room #").agg({"Timestamp": np.min})
-        print("Before: ")
-        print((all_data.loc[room])['Timestamp'])
-        (all_data.loc[room])['Timestamp'] = temp_time.loc[room]['Timestamp']
-        print("After:")
-        print((all_data.loc[room])['Timestamp'])
-    else:
-        (all_data.loc[room])['Highest CO2 Time'] = np.nan
-    temp_co2 = all_data['Lowest CO2'][room]
-    print("Original Value: " + str(temp_co2) + "\n")
-    if not (np.isnan(temp_co2)):
-        #temp_co2 = int(temp_co2)
-        print(time_co2.index)
-        temp_time = time_co2.loc[temp_co2].groupby("Room #").agg(dict(Timestamp=np.min))
-        (all_data.loc[room])['Timestamp'] = temp_time.loc[room]['Timestamp']
-    else:
-        (all_data.loc[room])['Lowest CO2 Time'] = np.nan
-'''
-
-
-'''
 After all functionality added -- remember to add in convert datetime function
+'''
 
 conn = sqlite3.connect(PATH)
 all_data.to_sql("DailyDatabase", conn, if_exists='append')
-temp_data.to_sql("DailyTempDatabase", conn, if_exists='append')
-co2_data.to_sql("DailyCarbonDatabase", conn, if_exists='append')
-'''
-
-
-
-
-
-
+temp_data.to_sql("DailyTempDatabase", conn, if_exists='replace')
+co2_data.to_sql("DailyCarbonDatabase", conn, if_exists='replace')
 
 # Daily Clear -- commented out for testing
 
