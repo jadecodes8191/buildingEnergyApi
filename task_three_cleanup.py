@@ -23,10 +23,10 @@ for x in range(0, len(co2_data['Timestamp'])):
 
 time_temp = temp_data.copy().set_index(["Room #", "Temperature"])
 time_co2 = co2_data.copy().set_index(["Room #", "CO2"])
-print("Time CO2")
-print((time_co2.loc['000'].loc[-50])['Timestamp'])
-print("Time Temp")
-print(time_temp)
+#print("Time CO2")
+#print((time_co2.loc['000'].loc[-50])['Timestamp'])
+#print("Time Temp")
+#print(time_temp)
 # Multi-index should identify uniquely
 
 td_copy = temp_data.set_index("Room #").T
@@ -174,14 +174,18 @@ for room in time_co2.index:
     co2_data['Lowest CO2 Time'][room[0]] = all_data['Lowest CO2 Time'][room[0]]
     co2_data['Highest CO2 Time'][room[0]] = all_data['Highest CO2 Time'][room[0]]
 
-all_data.to_csv('empty.csv')
+for x in range(0, len(all_data['First Time Too Cold'])):
+    all_data['First Time Too Cold'].iloc[x] = convert_datetime(all_data['First Time Too Cold'].iloc[x])
+    all_data['Last Time Too Cold'].iloc[x] = convert_datetime(all_data['Last Time Too Cold'].iloc[x])
+    all_data['First Time Too Warm'].iloc[x] = convert_datetime(all_data['First Time Too Warm'].iloc[x])
+    all_data['Last Time Too Warm'].iloc[x] = convert_datetime(all_data['Last Time Too Warm'].iloc[x])
 
 '''
 After all functionality added -- remember to add in convert datetime function
 '''
 
 conn = sqlite3.connect(PATH)
-all_data.to_sql("DailyDatabase", conn, if_exists='append')
+all_data.to_sql("DailyDatabase", conn, if_exists='replace')
 temp_data.to_sql("DailyTempDatabase", conn, if_exists='replace')
 co2_data.to_sql("DailyCarbonDatabase", conn, if_exists='replace')
 
@@ -199,5 +203,3 @@ cursor.execute(drop2)
                                              
 conn.close()
 '''
-
-
