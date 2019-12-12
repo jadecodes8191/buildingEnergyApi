@@ -1,6 +1,7 @@
 # to be run every week: takes in data from task three and further aggregates it to get a cohesive weekly report.
 
 import sqlite3
+import sys
 
 import sqlalchemy
 import pandas as pd
@@ -13,7 +14,6 @@ engine = sqlalchemy.create_engine('sqlite:///' + PATH)
 daily_data = pd.read_sql_table("DailyDatabase", engine)
 daily_data['Days With Problems'] = None
 all_temps = pd.read_sql_table("DailyTempDatabase", engine)
-all_temps.to_csv("weekly.csv")
 all_carbon = pd.read_sql_table("DailyCarbonDatabase", engine)
 
 all_temps_copy = all_temps.set_index(['Room #', 'Temperature'])
@@ -45,36 +45,41 @@ all_carbon['Mean CO2'] = all_carbon['CO2']
 co2_analysis = all_carbon.groupby("Room #").agg({"Mean CO2": np.mean,
                                                  "Median CO2": np.median})
 
-'''
-# Time Testing
-my_timestamps = ['2019-11-14 00:00:00', '2019-11-14 00:01:02', '2019-11-13 00:00:05', '2019-11-12 10:23:07']
-for x in range(0, len(my_timestamps)):
-    my_timestamps[x] = (pd.to_datetime(my_timestamps[x]) - datetime.timedelta(0))
-print(np.min(my_timestamps))
-print(np.max(my_timestamps))
-# End of Time Testing - produces accurate result with extra functionality, won't work without some conversions
+# for some reason, sql was automatically converting all the interval values to bytes... but this reverses it
 
-'''
+
+def convert_to_int(x):
+    if x is not None:
+        return int.from_bytes(x, sys.byteorder)
+    return None
+
+
+daily_data['Intervals Too Warm'] = daily_data['Intervals Too Warm'].apply(convert_to_int)
+daily_data['Intervals Too Cold'] = daily_data['Intervals Too Cold'].apply(convert_to_int)
+daily_data['Intervals Too Much CO2'] = daily_data['Intervals Too Much CO2'].apply(convert_to_int)
+daily_data['Intervals Too Little CO2'] = daily_data['Intervals Too Little CO2'].apply(convert_to_int)
+
 
 daily_data = daily_data.groupby("Room #").agg({"Days With Problems": np.size,
-                                               "Intervals Too Warm" : np.sum,
-                                               "Intervals Too Cold" : np.sum,
+                                               "Intervals Too Warm": np.sum,
+                                               "Intervals Too Cold": np.sum,
                                                "Intervals Too Much CO2": np.sum,
                                                "Intervals Too Little CO2": np.sum,
-                                               "Highest Temperature" : np.max,
-                                               "Lowest Temperature" : np.min,
-                                               'Highest CO2':np.max,
-                                               'Lowest CO2':np.min,
-                                               "First Time Too Warm" : np.min,
-                                               "Last Time Too Warm" : np.max,
-                                               "First Time Too Cold" : np.min,
-                                               "Last Time Too Cold" : np.max})
+                                               "Highest Temperature": np.max,
+                                               "Lowest Temperature": np.min,
+                                               'Highest CO2': np.max,
+                                               'Lowest CO2': np.min,
+                                               "First Time Too Warm": np.min,
+                                               "Last Time Too Warm": np.max,
+                                               "First Time Too Cold": np.min,
+                                               "Last Time Too Cold": np.max})
 
 daily_data['Time of Highest Temp'] = None
 daily_data['Time of Lowest Temp'] = None
 daily_data['Time of Highest CO2'] = None
 daily_data['Time of Lowest CO2'] = None
 
+# For each room, goes back into the copies to find the times of the most extreme values
 for room in daily_data.index:
     if not np.isnan(daily_data['Highest Temperature'][room]):
         # match highest temp to time at which it occured
@@ -99,11 +104,6 @@ daily_data = pd.merge(daily_data, co2_analysis, how='outer', on=['Room #'])
 daily_data.to_excel("output.xlsx")
 daily_data.to_csv("tester.csv")
 
-"""
-should be run once a week: clear out daily database and others, or maybe save them to a more permanent database, just to
-clear for the next weekly report.
-
-Commented out for testing: Should add back in after testing
 
 PATH = 'my_file'
 
@@ -119,6 +119,6 @@ cursor.execute(drop2)
 cursor.execute(drop3)
 
 conn.close()
-"""
+
 
 

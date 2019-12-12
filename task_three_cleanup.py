@@ -25,11 +25,7 @@ for x in range(0, len(co2_data['Timestamp'])):
 
 time_temp = temp_data.copy().set_index(["Room #", "Temperature"])
 time_co2 = co2_data.copy().set_index(["Room #", "CO2"])
-#print("Time CO2")
-#print((time_co2.loc['000'].loc[-50])['Timestamp'])
-#print("Time Temp")
-#print(time_temp)
-# Multi-index should identify uniquely
+# Multi-index should identify a room and temp or co2 value uniquely for when we look for the times of h/l values
 
 td_copy = temp_data.set_index("Room #").T
 cd_copy = co2_data.set_index("Room #").T
@@ -39,9 +35,7 @@ temp_data['Lowest Temperature'] = temp_data['Temperature']
 co2_data['Highest CO2'] = co2_data['CO2']
 co2_data['Lowest CO2'] = co2_data['CO2']
 
-# CENTRAL GROUPBY STATEMENT
-
-# All grouping & analysis should actually be done HERE
+# Groups low/high #s
 
 temp_data = temp_data.groupby("Room #").agg({'Lowest Temperature': np.min,
                                              'Highest Temperature': np.max})
@@ -51,7 +45,7 @@ co2_data = co2_data.groupby('Room #').agg({'Highest CO2': np.max,
 
 all_data = pd.merge(temp_data, co2_data, how='outer', on=['Room #'])
 
-#INTERVALS
+# Finds number of intervals with a given problem for each room
 
 all_data['Intervals Too Cold'] = None
 all_data['Intervals Too Warm'] = None
@@ -91,8 +85,6 @@ for room in cd_copy:
     elif len(intervals_co2) == 2:
         all_data['Intervals Too Little CO2'][room] = (intervals_co2.iloc[0])[0]
         all_data['Intervals Too Much CO2'][room] = (intervals_co2.iloc[1])[0]
-
-# END OF INTERVAL CODE
 
 # go back into time database (copied from original database) and locate timestamps
 
@@ -148,6 +140,8 @@ def convert_datetime(z):
         return datetime.datetime.strftime(z.to_pydatetime(), '%Y-%m-%d %H:%M:%S')
 
 
+# finds times of high/low temps on a daily basis... this isn't actually used in the final report but it might be good information to have
+
 for room in time_temp.index:
     low_temps = time_temp.loc[room[0]].loc[all_data['Lowest Temperature'][room[0]]]['Timestamp']
     high_temps = time_temp.loc[room[0]].loc[all_data['Highest Temperature'][room[0]]]['Timestamp']
@@ -176,6 +170,7 @@ for room in time_co2.index:
     co2_data['Lowest CO2 Time'][room[0]] = all_data['Lowest CO2 Time'][room[0]]
     co2_data['Highest CO2 Time'][room[0]] = all_data['Highest CO2 Time'][room[0]]
 
+# Converts to string so SQL can handle it
 for x in range(0, len(all_data['First Time Too Cold'])):
     all_data['First Time Too Cold'].iloc[x] = convert_datetime(all_data['First Time Too Cold'].iloc[x])
     all_data['Last Time Too Cold'].iloc[x] = convert_datetime(all_data['Last Time Too Cold'].iloc[x])
@@ -184,21 +179,17 @@ for x in range(0, len(all_data['First Time Too Cold'])):
 
 td_copy = td_copy.T.sort_values('Room #')
 cd_copy = cd_copy.T.sort_values('Room #')
-cd_copy.to_csv("tester.csv")
+all_data.to_csv("tester.csv")
 
-'''
-After all functionality added -- remember to add in convert datetime function
-'''
+# Connect to databases
 
 conn = sqlite3.connect(PATH)
 all_data.to_sql("DailyDatabase", conn, if_exists='replace')
 td_copy.to_sql("DailyTempDatabase", conn, if_exists='replace')
 cd_copy.to_sql("DailyCarbonDatabase", conn, if_exists='replace')
 
-# Daily Clear -- commented out for testing
+# Clear all daily files so they're not repeated the next day
 
-'''
-conn = sqlite3.connect(PATH)
 cursor = conn.cursor()                       
                                           
 drop = "DROP TABLE TemperatureProblemsDatabase"
@@ -208,4 +199,4 @@ cursor.execute(drop)
 cursor.execute(drop2)
                                              
 conn.close()
-'''
+
