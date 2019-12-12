@@ -12,6 +12,8 @@ PATH = 'my_file'
 # Reads in databases from tasks 1 and 2
 engine = sqlalchemy.create_engine('sqlite:///' + PATH)
 temp_data = pd.read_sql_table("TemperatureProblemsDatabase", engine)
+temp_data = temp_data.sort_values("Room #")
+temp_data.to_csv('tester.csv')
 co2_data = pd.read_sql_table("CarbonDioxideProblemsDatabase", engine)
 
 # Convert times to integers so that they compare accurately
@@ -180,14 +182,18 @@ for x in range(0, len(all_data['First Time Too Cold'])):
     all_data['First Time Too Warm'].iloc[x] = convert_datetime(all_data['First Time Too Warm'].iloc[x])
     all_data['Last Time Too Warm'].iloc[x] = convert_datetime(all_data['Last Time Too Warm'].iloc[x])
 
+td_copy = td_copy.T.sort_values('Room #')
+cd_copy = cd_copy.T.sort_values('Room #')
+cd_copy.to_csv("tester.csv")
+
 '''
 After all functionality added -- remember to add in convert datetime function
 '''
 
 conn = sqlite3.connect(PATH)
 all_data.to_sql("DailyDatabase", conn, if_exists='replace')
-temp_data.to_sql("DailyTempDatabase", conn, if_exists='replace')
-co2_data.to_sql("DailyCarbonDatabase", conn, if_exists='replace')
+td_copy.to_sql("DailyTempDatabase", conn, if_exists='replace')
+cd_copy.to_sql("DailyCarbonDatabase", conn, if_exists='replace')
 
 # Daily Clear -- commented out for testing
 
