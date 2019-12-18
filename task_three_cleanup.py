@@ -30,18 +30,18 @@ time_co2 = co2_data.copy().set_index(["Room #", "CO2"])
 td_copy = temp_data.set_index("Room #").T
 cd_copy = co2_data.set_index("Room #").T
 
-temp_data['Highest Temperature'] = temp_data['Temperature']
-temp_data['Lowest Temperature'] = temp_data['Temperature']
-co2_data['Highest CO2'] = co2_data['CO2']
-co2_data['Lowest CO2'] = co2_data['CO2']
+temp_data['Highest Problematic Temperature'] = temp_data['Temperature']
+temp_data['Lowest Problematic Temperature'] = temp_data['Temperature']
+co2_data['Highest Problematic CO2'] = co2_data['CO2']
+co2_data['Lowest Problematic CO2'] = co2_data['CO2']
 
 # Groups low/high #s
 
-temp_data = temp_data.groupby("Room #").agg({'Lowest Temperature': np.min,
-                                             'Highest Temperature': np.max})
+temp_data = temp_data.groupby("Room #").agg({'Lowest Problematic Temperature': np.min,
+                                             'Highest Problematic Temperature': np.max})
 
-co2_data = co2_data.groupby('Room #').agg({'Highest CO2': np.max,
-                                           'Lowest CO2': np.min})
+co2_data = co2_data.groupby('Room #').agg({'Highest Problematic CO2': np.max,
+                                           'Lowest Problematic CO2': np.min})
 
 all_data = pd.merge(temp_data, co2_data, how='outer', on=['Room #'])
 
@@ -57,6 +57,8 @@ for room in td_copy:
     print(room)
     intervals_temp = td_copy[room].T
     intervals_temp['Intervals'] = None
+    if type(intervals_temp) == pd.Series:
+        intervals_temp = pd.DataFrame(intervals_temp).T
     intervals_temp = intervals_temp.groupby("High Temp?").agg({"Intervals": np.size})
     print("Temp Intervals: ")
     print(intervals_temp)
@@ -74,6 +76,8 @@ for room in cd_copy:
     print(room)
     intervals_co2 = cd_copy[room].T
     intervals_co2['Intervals'] = None
+    if type(intervals_co2) == pd.Series:
+        intervals_co2 = pd.DataFrame(intervals_co2).T
     intervals_co2 = intervals_co2.groupby("High Carbon?").agg({"Intervals": np.size})
     print("CO2 Intervals: ")
     print(intervals_co2)
@@ -122,14 +126,14 @@ for room in time_temp.index:
         all_data['Last Time Too Warm'][room_number] = late_times[1]
         # make sure data is sorted before this happens!!! I think it is sorted because of the groupby
 
-all_data['Lowest Temperature Time'] = None
-all_data['Highest Temperature Time'] = None
-all_data['Highest CO2 Time'] = None
-all_data['Lowest CO2 Time'] = None
-temp_data['Lowest Temperature Time'] = None
-temp_data['Highest Temperature Time'] = None
-co2_data['Lowest CO2 Time'] = None
-co2_data['Highest CO2 Time'] = None
+all_data['Time of Lowest Problematic Temperature'] = None
+all_data['Time of Highest Problematic Temperature'] = None
+all_data['Time of Highest Problematic CO2'] = None
+all_data['Time of Lowest Problematic CO2'] = None
+temp_data['Time of Lowest Problematic Temperature'] = None
+temp_data['Time of Highest Problematic Temperature'] = None
+co2_data['Time of Lowest Problematic CO2'] = None
+co2_data['Time of Highest Problematic CO2'] = None
 
 
 def convert_datetime(z):
@@ -143,32 +147,32 @@ def convert_datetime(z):
 # finds times of high/low temps on a daily basis... this isn't actually used in the final report but it might be good information to have
 
 for room in time_temp.index:
-    low_temps = time_temp.loc[room[0]].loc[all_data['Lowest Temperature'][room[0]]]['Timestamp']
-    high_temps = time_temp.loc[room[0]].loc[all_data['Highest Temperature'][room[0]]]['Timestamp']
+    low_temps = time_temp.loc[room[0]].loc[all_data['Lowest Problematic Temperature'][room[0]]]['Timestamp']
+    high_temps = time_temp.loc[room[0]].loc[all_data['Highest Problematic Temperature'][room[0]]]['Timestamp']
     if type(low_temps) == pd.Series:
-        all_data['Lowest Temperature Time'][room[0]] = convert_datetime(low_temps.iloc[0])
+        all_data['Time of Lowest Problematic Temperature'][room[0]] = convert_datetime(low_temps.iloc[0])
     else:
-        all_data['Lowest Temperature Time'][room[0]] = convert_datetime(low_temps)
+        all_data['Time of Lowest Problematic Temperature'][room[0]] = convert_datetime(low_temps)
     if type(high_temps) == pd.Series:
-        all_data['Highest Temperature Time'][room[0]] = convert_datetime(high_temps.iloc[0])
+        all_data['Time of Highest Problematic Temperature'][room[0]] = convert_datetime(high_temps.iloc[0])
     else:
-        all_data['Highest Temperature Time'][room[0]] = convert_datetime(high_temps)
-    temp_data['Lowest Temperature Time'][room[0]] = all_data['Lowest Temperature Time'][room[0]]
-    temp_data['Highest Temperature Time'][room[0]] = all_data['Highest Temperature Time'][room[0]]
+        all_data['Time of Highest Problematic Temperature'][room[0]] = convert_datetime(high_temps)
+    temp_data['Time of Lowest Problematic Temperature'][room[0]] = all_data['Time of Lowest Problematic Temperature'][room[0]]
+    temp_data['Time of Highest Problematic Temperature'][room[0]] = all_data['Time of Highest Problematic Temperature'][room[0]]
 
 for room in time_co2.index:
-    low_co2 = time_co2.loc[room[0]].loc[all_data['Lowest CO2'][room[0]]]['Timestamp']
-    high_co2 = time_co2.loc[room[0]].loc[all_data['Highest CO2'][room[0]]]['Timestamp']
+    low_co2 = time_co2.loc[room[0]].loc[all_data['Lowest Problematic CO2'][room[0]]]['Timestamp']
+    high_co2 = time_co2.loc[room[0]].loc[all_data['Highest Problematic CO2'][room[0]]]['Timestamp']
     if type(low_co2) == pd.Series:
-        all_data['Lowest CO2 Time'][room[0]] = convert_datetime(low_co2.iloc[0])
+        all_data['Time of Lowest Problematic CO2'][room[0]] = convert_datetime(low_co2.iloc[0])
     else:
-        all_data['Lowest CO2 Time'][room[0]] = convert_datetime(low_co2)
+        all_data['Time of Lowest Problematic CO2'][room[0]] = convert_datetime(low_co2)
     if type(high_co2) == pd.Series:
-        all_data['Highest CO2 Time'][room[0]] = convert_datetime(high_co2.iloc[0])
+        all_data['Time of Highest Problematic CO2'][room[0]] = convert_datetime(high_co2.iloc[0])
     else:
-        all_data['Highest CO2 Time'][room[0]] = convert_datetime(high_co2)
-    co2_data['Lowest CO2 Time'][room[0]] = all_data['Lowest CO2 Time'][room[0]]
-    co2_data['Highest CO2 Time'][room[0]] = all_data['Highest CO2 Time'][room[0]]
+        all_data['Time of Highest Problematic CO2'][room[0]] = convert_datetime(high_co2)
+    co2_data['Time of Lowest Problematic CO2'][room[0]] = all_data['Time of Lowest Problematic CO2'][room[0]]
+    co2_data['Time of Highest Problematic CO2'][room[0]] = all_data['Time of Highest Problematic CO2'][room[0]]
 
 # Converts to string so SQL can handle it
 for x in range(0, len(all_data['First Time Too Cold'])):
@@ -184,9 +188,9 @@ all_data.to_csv("tester.csv")
 # Connect to databases
 
 conn = sqlite3.connect(PATH)
-all_data.to_sql("DailyDatabase", conn, if_exists='replace')
-td_copy.to_sql("DailyTempDatabase", conn, if_exists='replace')
-cd_copy.to_sql("DailyCarbonDatabase", conn, if_exists='replace')
+all_data.to_sql("DailyDatabase", conn, if_exists='append')
+td_copy.to_sql("DailyTempDatabase", conn, if_exists='append')
+cd_copy.to_sql("DailyCarbonDatabase", conn, if_exists='append')
 
 # Clear all daily files so they're not repeated the next day
 
