@@ -24,7 +24,7 @@ def convert_back(z):
     if z == "N/A":
         return np.NaN
     elif z is not None:
-        return datetime.datetime.strptime(z, "%Y-%m-%d %H:%M:%S")
+        return datetime.datetime.strptime(z, "%Y-%m-%d %H:%M:%S").timestamp()
     else:
         return None
 
