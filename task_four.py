@@ -118,6 +118,18 @@ for room in daily_data.index:
         else:
             daily_data['Time of Lowest Problematic CO2'][room] = all_carbon_copy.loc[index_tuple].sort_values('Timestamp').reset_index().iloc[0]['Timestamp']
 
+
+def make_time_readable(x):
+    if x is not None:
+        return datetime.datetime.fromtimestamp(x)
+    return None
+
+
+daily_data["First Time Too Warm"] = daily_data["First Time Too Warm"].apply(make_time_readable)
+daily_data["Last Time Too Warm"] = daily_data["Last Time Too Warm"].apply(make_time_readable)
+daily_data["First Time Too Cold"] = daily_data["First Time Too Cold"].apply(make_time_readable)
+daily_data["Last Time Too Cold"] = daily_data["Last Time Too Cold"].apply(make_time_readable)
+
 daily_data = pd.merge(daily_data, temp_analysis, how='outer', on=['Room #'])
 daily_data = pd.merge(daily_data, co2_analysis, how='outer', on=['Room #'])
 
