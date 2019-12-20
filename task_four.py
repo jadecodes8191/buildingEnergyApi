@@ -37,15 +37,25 @@ for x in range(0, len(daily_data['First Time Too Cold'])):
 
 print(daily_data['Last Time Too Cold'])
 
-all_temps['Median Temperature'] = all_temps['Temperature']
-all_temps['Mean Temperature'] = all_temps['Temperature']
-temp_analysis = all_temps.groupby("Room #").agg({"Mean Temperature": np.mean,
-                                                 "Median Temperature": np.median})
 
-all_carbon['Median CO2'] = all_carbon['CO2']
-all_carbon['Mean CO2'] = all_carbon['CO2']
-co2_analysis = all_carbon.groupby("Room #").agg({"Mean CO2": np.mean,
-                                                 "Median CO2": np.median})
+def none_to_nan(x):
+    if x is None:
+        return np.NaN
+    return x
+
+
+all_temps['Temperature'] = all_temps['Temperature'].apply(none_to_nan)
+all_carbon['CO2'] = all_carbon['CO2'].apply(none_to_nan)
+
+all_temps['Median Problematic Temperature'] = all_temps['Temperature']
+all_temps['Mean Problematic Temperature'] = all_temps['Temperature']
+temp_analysis = all_temps.groupby("Room #").agg({"Mean Problematic Temperature": np.nanmean,
+                                                 "Median Problematic Temperature": np.nanmedian})
+
+all_carbon['Median Problematic CO2'] = all_carbon['CO2']
+all_carbon['Mean Problematic CO2'] = all_carbon['CO2']
+co2_analysis = all_carbon.groupby("Room #").agg({"Mean Problematic CO2": np.mean,
+                                                 "Median Problematic CO2": np.median})
 
 # for some reason, sql was automatically converting all the interval values to bytes... but this reverses it
 
@@ -120,7 +130,7 @@ for room in daily_data.index:
 
 
 def make_time_readable(x):
-    if x is not None:
+    if (x is not None) and (not np.isnan(x)):
         return datetime.datetime.fromtimestamp(x)
     return None
 
