@@ -27,12 +27,11 @@ report.add_header(
 )
 
 # Assemble message object using MIMEMultipart
-energize_email = "energize.weekly.report@gmail.com"
-report_emails = "jnair2022@k12.andoverma.us"
+energize_email = input("Email: ")
+report_emails = ["example@gmail.com"]
 subject = "Weekly Report for Energize Andover"
 
 message = MIMEMultipart()
-message['To'] = report_emails
 message['From'] = energize_email
 message['Subject'] = subject
 
@@ -45,12 +44,14 @@ print(type(final_msg))
 print(type(energize_email))
 password = getpass()
 print(type(password))
-security_context = ssl.create_default_context()
-with smtp.SMTP_SSL('smtp.gmail.com', port, context=security_context) as server:
-    print(type(port))
-    print(type(security_context))
-    print(type(server))
-    server.login(energize_email, password)
-    #for email in report_emails:
-    server.sendmail(energize_email, report_emails, final_msg)
-    server.quit()
+
+for report_email in report_emails:
+    message['To'] = report_email
+    security_context = ssl.create_default_context()
+    with smtp.SMTP_SSL('smtp.gmail.com', port, context=security_context) as server:
+        print(type(port))
+        print(type(security_context))
+        print(type(server))
+        server.login(energize_email, password)
+        server.sendmail(energize_email, report_email, final_msg)
+        server.quit()
