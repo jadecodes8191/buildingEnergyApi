@@ -14,3 +14,5 @@ Main files to take a look at, which display the steps I took towards having a fu
   
 - task_one_and_two, task_three, task_four, and task_five
   - This is the more in-depth version of the weekly report, which both makes use of databases and aggregates the data more systematically (first per day, and then per week), while storing the raw data to allow for more flexibility and use cases. It includes additional data, such as the mean and median temperature and carbon dioxide, as well as the first and last times certain issues were recorded for a room. It should then send off the final weekly report (as an Excel file) to a mailing list.
+
+As of 1/3/2020, the full weekly report successfully goes through all the steps in the last point described above. 
