@@ -3,10 +3,13 @@ import pandas as pd
 import numpy as np
 
 
-df = pd.DataFrame()
-x = np.mean([1, 2, 3])
+df = pd.read_csv("graph_tester.csv")
 
 
 print("This is running")
 plt.figure()
-plt.plot(x)
+plt.scatter(df['Intervals Too Warm'], df['Intervals Too Cold'])
+plt.show()
+# important!^^^
+
+
