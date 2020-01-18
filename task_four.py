@@ -154,12 +154,10 @@ cursor = conn.cursor()
 drop = "DROP TABLE DailyDatabase"
 drop2 = "DROP TABLE DailyTempDatabase"
 drop3 = "DROP TABLE DailyCarbonDatabase"
-drop4 = "DROP TABLE TempAndCO2LogWeekly"
 
 cursor.execute(drop)
 cursor.execute(drop2)
 cursor.execute(drop3)
-cursor.execute(drop4)
 
 conn.close()
 

@@ -210,8 +210,8 @@ time_wkly_temp.to_csv("tester.csv")
 
 conn = sqlite3.connect(PATH)
 #all_data.to_sql("DailyDatabase", conn, if_exists='append')
-time_wkly_temp.to_sql("DailyTempDatabase", conn, if_exists='replace')
-time_wkly_co2.to_sql("DailyCarbonDatabase", conn, if_exists='replace')
+time_wkly_temp.to_sql("DailyTempDatabase", conn, if_exists='append')
+time_wkly_co2.to_sql("DailyCarbonDatabase", conn, if_exists='append')
 weekly_log.to_sql("DailyDatabase", conn, if_exists='append')
 
 
@@ -221,8 +221,10 @@ cursor = conn.cursor()
                                           
 drop = "DROP TABLE TemperatureProblemsDatabase"
 drop2 = "DROP TABLE CarbonDioxideProblemsDatabase"
+drop3 = "DROP TABLE TempAndCO2LogWeekly"
                                              
 cursor.execute(drop)                         
 cursor.execute(drop2)
+cursor.execute(drop3)
                                              
 conn.close()
