@@ -47,15 +47,15 @@ def none_to_nan(x):
 all_temps['Temperature'] = all_temps['Temperature'].apply(none_to_nan)
 all_carbon['CO2'] = all_carbon['CO2'].apply(none_to_nan)
 
-all_temps['Median Problematic Temperature'] = all_temps['Temperature']
-all_temps['Mean Problematic Temperature'] = all_temps['Temperature']
-temp_analysis = all_temps.groupby("Room #").agg({"Mean Problematic Temperature": np.nanmean,
-                                                 "Median Problematic Temperature": np.nanmedian})
+all_temps['Median Temperature'] = all_temps['Temperature']
+all_temps['Mean Temperature'] = all_temps['Temperature']
+temp_analysis = all_temps.groupby("Room #").agg({"Mean Temperature": np.nanmean,
+                                                 "Median Temperature": np.nanmedian})
 
-all_carbon['Median Problematic CO2'] = all_carbon['CO2']
-all_carbon['Mean Problematic CO2'] = all_carbon['CO2']
-co2_analysis = all_carbon.groupby("Room #").agg({"Mean Problematic CO2": np.mean,
-                                                 "Median Problematic CO2": np.median})
+all_carbon['Median CO2'] = all_carbon['CO2']
+all_carbon['Mean CO2'] = all_carbon['CO2']
+co2_analysis = all_carbon.groupby("Room #").agg({"Mean CO2": np.mean,
+                                                "Median CO2": np.median})
 
 # for some reason, sql was automatically converting all the interval values to bytes... but this reverses it
 
@@ -79,54 +79,54 @@ daily_data = daily_data.groupby("Room #").agg({"Days With Problems": np.size,
                                                "Intervals Too Cold": np.sum,
                                                "Intervals Too Much CO2": np.sum,
                                                "Intervals Too Little CO2": np.sum,
-                                               "Highest Problematic Temperature": np.max,
-                                               "Lowest Problematic Temperature": np.min,
-                                               'Highest Problematic CO2': np.max,
-                                               'Lowest Problematic CO2': np.min,
+                                               "Highest Temperature": np.max,
+                                               "Lowest Temperature": np.min,
+                                               'Highest CO2': np.max,
+                                               'Lowest CO2': np.min,
                                                "First Time Too Warm": np.min,
                                                "Last Time Too Warm": np.max,
                                                "First Time Too Cold": np.min,
                                                "Last Time Too Cold": np.max})
 
-daily_data['Time of Highest Problematic Temperature'] = None
-daily_data['Time of Lowest Problematic Temperature'] = None
-daily_data['Time of Highest Problematic CO2'] = None
-daily_data['Time of Lowest Problematic CO2'] = None
+daily_data['Time of Highest Temperature'] = None
+daily_data['Time of Lowest Temperature'] = None
+daily_data['Time of Highest CO2'] = None
+daily_data['Time of Lowest CO2'] = None
 
 # For each room, goes back into the copies to find the times of the most extreme values
 for room in daily_data.index:
-    if not np.isnan(daily_data['Highest Problematic Temperature'][room]):
-        # match highest temp to time at which it occured
-        index_tuple = (room, int(daily_data['Highest Problematic Temperature'][room]))
+    if not np.isnan(daily_data['Highest Temperature'][room]):
+        # match highest temp to time at which it occurred
+        index_tuple = (room, int(daily_data['Highest Temperature'][room]))
         if type(all_temps_copy.loc[index_tuple]) == pd.Series:
             temp_df =(pd.DataFrame(all_temps_copy.loc[index_tuple]).T.sort_values('Timestamp')).T
-            daily_data['Time of Highest Problematic Temperature'][room] = temp_df.loc['Timestamp'][0]
+            daily_data['Time of Highest Temperature'][room] = temp_df.loc['Timestamp'][0]
         else:
-            daily_data['Time of Highest Problematic Temperature'][room] = all_temps_copy.loc[index_tuple].sort_values('Timestamp').reset_index().iloc[0]['Timestamp']
-    if not np.isnan(daily_data['Lowest Problematic Temperature'][room]):
-        # match lowest temp to time at which it occured
-        index_tuple = (room, int(daily_data['Lowest Problematic Temperature'][room]))
+            daily_data['Time of Highest Temperature'][room] = all_temps_copy.loc[index_tuple].sort_values('Timestamp').reset_index().iloc[0]['Timestamp']
+    if not np.isnan(daily_data['Lowest Temperature'][room]):
+        # match lowest temp to time at which it occurred
+        index_tuple = (room, int(daily_data['Lowest Temperature'][room]))
         if type(all_temps_copy.loc[index_tuple]) == pd.Series:
             temp_df =(pd.DataFrame(all_temps_copy.loc[index_tuple]).T.sort_values('Timestamp')).T
-            daily_data['Time of Lowest Problematic Temperature'][room] = temp_df.loc['Timestamp'][0]
+            daily_data['Time of Lowest Temperature'][room] = temp_df.loc['Timestamp'][0]
         else:
-            daily_data['Time of Lowest Problematic Temperature'][room] = all_temps_copy.loc[index_tuple].sort_values('Timestamp').reset_index().iloc[0]['Timestamp']
-    if not np.isnan(daily_data['Highest Problematic CO2'][room]):
-        # match highest co2 to time at which it occured
-        index_tuple = (room, int(daily_data['Highest Problematic CO2'][room]))
+            daily_data['Time of Lowest Temperature'][room] = all_temps_copy.loc[index_tuple].sort_values('Timestamp').reset_index().iloc[0]['Timestamp']
+    if not np.isnan(daily_data['Highest CO2'][room]):
+        # match highest co2 to time at which it occurred
+        index_tuple = (room, int(daily_data['Highest CO2'][room]))
         if type(all_carbon_copy.loc[index_tuple]) == pd.Series:
             temp_df =(pd.DataFrame(all_carbon_copy.loc[index_tuple]).T.sort_values('Timestamp')).T
-            daily_data['Time of Highest Problematic CO2'][room] = temp_df.loc['Timestamp'][0]
+            daily_data['Time of Highest CO2'][room] = temp_df.loc['Timestamp'][0]
         else:
-            daily_data['Time of Highest Problematic CO2'][room] = all_carbon_copy.loc[index_tuple].sort_values('Timestamp').reset_index().iloc[0]['Timestamp']
-    if not np.isnan(daily_data['Lowest Problematic CO2'][room]):
-        # match lowest co2 to time at which it occured
-        index_tuple = (room, int(daily_data['Lowest Problematic CO2'][room]))
+            daily_data['Time of Highest CO2'][room] = all_carbon_copy.loc[index_tuple].sort_values('Timestamp').reset_index().iloc[0]['Timestamp']
+    if not np.isnan(daily_data['Lowest CO2'][room]):
+        # match lowest co2 to time at which it occurred
+        index_tuple = (room, int(daily_data['Lowest CO2'][room]))
         if type(all_carbon_copy.loc[index_tuple]) == pd.Series:
             temp_df =(pd.DataFrame(all_carbon_copy.loc[index_tuple]).T.sort_values('Timestamp')).T
-            daily_data['Time of Lowest Problematic CO2'][room] = temp_df.loc['Timestamp'][0]
+            daily_data['Time of Lowest CO2'][room] = temp_df.loc['Timestamp'][0]
         else:
-            daily_data['Time of Lowest Problematic CO2'][room] = all_carbon_copy.loc[index_tuple].sort_values('Timestamp').reset_index().iloc[0]['Timestamp']
+            daily_data['Time of Lowest CO2'][room] = all_carbon_copy.loc[index_tuple].sort_values('Timestamp').reset_index().iloc[0]['Timestamp']
 
 
 def make_time_readable(x):
@@ -144,7 +144,7 @@ daily_data = pd.merge(daily_data, temp_analysis, how='outer', on=['Room #'])
 daily_data = pd.merge(daily_data, co2_analysis, how='outer', on=['Room #'])
 
 daily_data.to_excel("output.xlsx")
-daily_data.to_csv('tester.csv')
+# daily_data.to_csv('tester.csv')
 
 PATH = 'my_file'
 
@@ -154,10 +154,12 @@ cursor = conn.cursor()
 drop = "DROP TABLE DailyDatabase"
 drop2 = "DROP TABLE DailyTempDatabase"
 drop3 = "DROP TABLE DailyCarbonDatabase"
+drop4 = "DROP TABLE TempAndCO2LogWeekly"
 
 cursor.execute(drop)
 cursor.execute(drop2)
 cursor.execute(drop3)
+cursor.execute(drop4)
 
 conn.close()
 

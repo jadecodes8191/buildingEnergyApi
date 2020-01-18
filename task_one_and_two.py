@@ -12,6 +12,7 @@ from building_data_requests import get_bulk
 import numbers
 import csv
 
+# sets thresholds
 temp_min = 65
 temp_units = "deg F"
 co2_units = "ppm"
@@ -205,9 +206,10 @@ df = df.append(my_twelfth_test_room, ignore_index=True)
 df = df.set_index('Room #')
 
 # I had commented out the permanent database for testing, but it's back now
-#engine = sqlalchemy.create_engine('sqlite:///' + PATH)
-#conn = sqlite3.connect(PATH)
-#df.to_sql("TempAndCO2Log", conn, if_exists='append')
+engine = sqlalchemy.create_engine('sqlite:///' + PATH)
+conn = sqlite3.connect(PATH)
+df.to_sql("TempAndCO2Log", conn, if_exists='append') # actual permanent database
+df.to_sql("TempAndCO2LogWeekly", conn, if_exists='append') # copy used for tasks 3 and 4 in this branch, must be cleared out every week
 
 # Carbon Dioxide minimum is calculated by subtracting 20 from the outside levels
 outside = df.loc['Outside Air']
