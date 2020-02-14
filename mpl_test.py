@@ -11,5 +11,3 @@ plt.figure()
 plt.scatter(df['Intervals Too Warm'], df['Intervals Too Cold'])
 plt.show()
 # important!^^^
-
-

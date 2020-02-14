@@ -7,13 +7,14 @@ import pandas as pd
 import sqlite3
 import numpy as np
 
+SERVER_PATH = '/media/ea/Data/Students/jade/buildingEnergyApi'
 PATH = 'my_file'
 
 # Reads in databases from tasks 1 and 2
-engine = sqlalchemy.create_engine('sqlite:///' + PATH)
+engine = sqlalchemy.create_engine('sqlite:///' + SERVER_PATH + PATH)
 temp_data = pd.read_sql_table("TemperatureProblemsDatabase", engine)# might need this into the other sql table directly... probably easiest
 temp_data = temp_data.sort_values("Room #")
-temp_data.to_csv('tester.csv')
+temp_data.to_csv(SERVER_PATH + 'tester.csv')
 co2_data = pd.read_sql_table("CarbonDioxideProblemsDatabase", engine)
 
 weekly_log = pd.read_sql_table("TempAndCO2LogWeekly", engine)
@@ -208,9 +209,10 @@ time_wkly_temp.to_csv("tester.csv")
 
 # Connect to databases
 
-conn = sqlite3.connect(PATH)
+conn = sqlite3.connect(SERVER_PATH + PATH)
 #all_data.to_sql("DailyDatabase", conn, if_exists='append')
 time_wkly_temp.to_sql("DailyTempDatabase", conn, if_exists='append')
+print(time_wkly_temp)
 time_wkly_co2.to_sql("DailyCarbonDatabase", conn, if_exists='append')
 weekly_log.to_sql("DailyDatabase", conn, if_exists='append')
 

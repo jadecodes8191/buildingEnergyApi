@@ -30,7 +30,7 @@ start_time = time.time()
 
 #
 
-SERVER_PATH = '' #'/media/ea/Data/Students/jade/buildingEnergyApi/'
+SERVER_PATH = '/media/ea/Data/Students/jade/buildingEnergyApi/'
 
 df = pd.read_csv(SERVER_PATH + 'ahs_air.csv', na_filter=False, comment='#' )
 # This file location doesn't work on the server (see above file path) --> be careful
@@ -206,10 +206,12 @@ df = df.append(my_twelfth_test_room, ignore_index=True)
 df = df.set_index('Room #')
 
 # I had commented out the permanent database for testing, but it's back now
-engine = sqlalchemy.create_engine('sqlite:///' + PATH)
-conn = sqlite3.connect(PATH)
+engine = sqlalchemy.create_engine('sqlite:///' + SERVER_PATH +  PATH)
+conn = sqlite3.connect(SERVER_PATH + PATH)
 df.to_sql("TempAndCO2Log", conn, if_exists='append') # actual permanent database
-df.to_sql("TempAndCO2LogWeekly", conn, if_exists='append') # copy used for tasks 3 and 4 in this branch, must be cleared out every week
+new_df = pd.read_sql("TempAndCO2Log", engine)
+new_df.to_csv(SERVER_PATH + "tester.csv")
+df.to_sql("TempAndCO2LogWeekly", conn, if_exists='append')# copy used for tasks 3 and 4 in this branch, must be cleared out every week
 
 # Carbon Dioxide minimum is calculated by subtracting 20 from the outside levels
 outside = df.loc['Outside Air']
@@ -226,7 +228,7 @@ print(new_data)
 
 # now we can connect the dataframe to 3 databases
 
-conn = sqlite3.connect(PATH)
+conn = sqlite3.connect(SERVER_PATH + PATH)
 
 
 def check_temp(x):
@@ -249,7 +251,7 @@ temp_data = temp_data[['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values
 temp_data['High Temp?'] = temp_data.T.apply(check_temp)
 print(temp_data)
 temp_data.to_sql("TemperatureProblemsDatabase", conn, if_exists='append')
-temp_data.to_csv('tester.csv')
+# temp_data.to_csv('tester.csv')
 
 
 # print("\nToo Much CO2: \n")
