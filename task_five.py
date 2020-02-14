@@ -45,7 +45,7 @@ for i in range(0, 4):
 
 # Assemble message object using MIMEMultipart
 energize_email = input("Email: ")
-report_emails = ["jnair2022@k12.andoverma.us"]
+report_emails = [""]
 subject = "Weekly Report for Energize Andover"
 
 message = MIMEMultipart()
