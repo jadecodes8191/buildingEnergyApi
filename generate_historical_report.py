@@ -50,7 +50,16 @@ print(week_start)
 print(datetime(2020, 2, 14, 7, 0, 3))
 print(df_test_copy.index)
 print(df_test_copy)
-print(df_test_copy[str(week_start), 'Outside Air'])
+print(df_test_copy.loc[str(week_start)])
+# the above line works if you add in the desired room # or not - use .loc to get a row
+
+mi_test = pd.DataFrame(np.array([[3, 2, 1], [4, 5, 5], [7, 48, 9]]), columns=[1, 3, 5])
+print(mi_test)
+print(mi_test.loc[0])
+mi_test = mi_test.set_index([1, 3])
+print(mi_test)
+#print(mi_test[mi_test.index[0]])
+print(mi_test.loc[(1732, 222)])
 
 for i in range(0, 7):
     # TODO: for each day, filter & create daily problem report. Append this to a database
