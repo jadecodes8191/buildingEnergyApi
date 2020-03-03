@@ -27,7 +27,7 @@ start_time = time.time()
 
 # TASK TWO BEGINS HERE: analysis of problem rooms at each interval
 
-df = pd.read_sql("TempAndCO2Log", engine)
+df = pd.read_sql("TempAndCO2LogFiltered", engine)
 
 # version with input -- could evolve into an interactive front end. Automation will come
 week_start_month = input("Month: (number 1-12)")
@@ -59,7 +59,17 @@ print(mi_test.loc[0])
 mi_test = mi_test.set_index([1, 3])
 print(mi_test)
 #print(mi_test[mi_test.index[0]])
-print(mi_test.loc[(1732, 222)])
+print(mi_test.loc[(1732, 222)])# produces a key error
+
+
+def get_interval_data(datetime, room=None):
+    if room is None:
+        print(df_test_copy.loc[str(datetime)])
+    else:
+        print(df_test_copy.loc[(str(datetime), room)])
+
+
+
 
 for i in range(0, 7):
     # TODO: for each day, filter & create daily problem report. Append this to a database
