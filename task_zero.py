@@ -63,14 +63,16 @@ while start_date <= end_date - datetime.timedelta(days=1):
 # This can and should be modified to include weekdays that are
 # days off from school -- for now this is just a placeholder
 
+# filter each day in the database with condition ~ map.get(this.day) == true
 print(datetime.date(df["Timestamp"][0].year, df["Timestamp"][0].month, df["Timestamp"][0].day))
 
 df["School Day?"] = df["Timestamp"].apply(lambda x: school_calendar.get(datetime.date(x.year, x.month, x.day)))
 print(df["School Day?"])
 
-# filter each day in the database with condition ~ map.get(this.day) == true
-
 # clean up database post-filter
+df_filtered = df.where(df["School Day?"] == True).dropna()
+df_filtered.to_sql("TempAndCO2LogFiltered", conn, if_exists="replace")
+
 
 # Track Elapsed Time
 elapsed_time = round((time.time() - start_time) * 1000)/1000

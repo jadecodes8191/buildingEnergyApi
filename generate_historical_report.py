@@ -58,21 +58,64 @@ print(mi_test)
 print(mi_test.loc[0])
 mi_test = mi_test.set_index([1, 3])
 print(mi_test)
-#print(mi_test[mi_test.index[0]])
-print(mi_test.loc[(1732, 222)])# produces a key error
+
+# print(mi_test[mi_test.index[0]])
+# print(mi_test.loc[(1732, 222)])# produces a key error
 
 
-def get_interval_data(datetime, room=None):
+# Gets interval data about a certain datetime, and the optional room parameter is passed in
+def get_interval_data(date_time, room=None):
     if room is None:
-        print(df_test_copy.loc[str(datetime)])
+        print(df_test_copy.loc[str(date_time)])  # this works
     else:
-        print(df_test_copy.loc[(str(datetime), room)])
+        print(df_test_copy.loc[(str(date_time), str(room))])  # this also works -- the room data type is a STRING
 
 
+get_interval_data(datetime(2020, 2, 14, 7, 0, 3), 225)  # test function call 3/11 -- works perfectly!
 
+
+# Function defs from task II
+def check_temp(x):
+    print("Start of x:")
+    print(x)
+    if x['Temperature'] > temp_max:
+        return True
+    return False
+
+
+def check_carbon(x):
+    if x['CO2'] > co2_max:
+        return True
+    return False
+# End of function defs from Task II
+
+
+new_data = df_test_copy.copy().reset_index()
+
+co2_min = 200
+# TODO: Fix this placeholder value
 
 for i in range(0, 7):
-    # TODO: for each day, filter & create daily problem report. Append this to a database
+    # TODO: for each day, filter (in task 2 style) & create daily problem report. Append this to a database,
+    #  which will serve as a task 3 equivalent
+
+    # Beginning of Section Modified from Task II
+
+    # print("\nToo Cold: \n")
+    temp_data = new_data[(new_data['Temperature'] < temp_min) | (new_data['Temperature'] > temp_max)]
+    temp_data = temp_data[['New Column', 'Room #', 'Temperature', 'CO2']].sort_values(by="Temperature", ascending=True)
+    temp_data['High Temp?'] = temp_data.T.apply(check_temp)
+    print(temp_data)
+    temp_data.to_sql("TemperatureProblemsDatabase", conn, if_exists='replace')
+    # temp_data.to_csv('tester.csv')
+
+    # print("\nToo Much CO2: \n")
+    carbon_data = new_data[(new_data.CO2 > co2_max) | (new_data.CO2 < co2_min)][['New Column', 'Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
+    carbon_data['High Carbon?'] = carbon_data.T.apply(check_carbon)
+    carbon_data.to_sql("CarbonDioxideProblemsDatabase", conn, if_exists='replace')
+
+    # End of Section Modified from Task II
     print("Daily Problems")
 
 # TODO: run task 4 on aggregation of daily problem reports
+# TODO: rename from "New Column" to "Timestamp" or something equivalent
