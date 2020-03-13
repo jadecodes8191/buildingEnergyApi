@@ -72,7 +72,7 @@ print(df["School Day?"])
 # clean up database post-filter
 df_filtered = df.where(df["School Day?"] == True).dropna()
 df_filtered.to_sql("TempAndCO2LogFiltered", conn, if_exists="replace")
-
+df_filtered.to_csv("weekly.csv")
 
 # Track Elapsed Time
 elapsed_time = round((time.time() - start_time) * 1000)/1000

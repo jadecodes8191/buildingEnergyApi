@@ -105,6 +105,7 @@ for i in range(0, 7):
     temp_data = new_data[(new_data['Temperature'] < temp_min) | (new_data['Temperature'] > temp_max)]
     temp_data = temp_data[['New Column', 'Room #', 'Temperature', 'CO2']].sort_values(by="Temperature", ascending=True)
     temp_data['High Temp?'] = temp_data.T.apply(check_temp)
+    print("Temp Data")
     print(temp_data)
     temp_data.to_sql("TemperatureProblemsDatabase", conn, if_exists='replace')
     # temp_data.to_csv('tester.csv')
