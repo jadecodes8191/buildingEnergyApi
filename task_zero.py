@@ -40,11 +40,20 @@ print(d.year)'''
 # Below is a more complicated version that starts from the date of the first entry in the permanent database,
 # then looping through each day from the start of logging to the last day logged.
 
-start_date = datetime.date(df["Timestamp"][0].year, df["Timestamp"][0].month, df["Timestamp"][0].day) - datetime.timedelta(days=1)
+week_start_month = input("Month: (number 1-12)")
+week_start_day = input("Day: (number 1-31)")
+week_start_year = input("Year: ")
+start_date = datetime.datetime.strptime(week_start_month + " " + week_start_day + " " + week_start_year, "%m %d %Y")
+start_date = datetime.date(start_date.year, start_date.month, start_date.day)
+# print(week_start)
+
+# start_date = datetime.date(df["Timestamp"][0].year, df["Timestamp"][0].month, df["Timestamp"][0].day) - datetime.timedelta(days=1)
+print("START DATE: ")
+print(start_date)
 last_idx = df["Timestamp"].size - 1
 print(df["Timestamp"][last_idx])
-end_date = datetime.date(df["Timestamp"][last_idx].year, df["Timestamp"][last_idx].month, df["Timestamp"][last_idx].day)
-
+# end_date = datetime.date(df["Timestamp"][last_idx].year, df["Timestamp"][last_idx].month, df["Timestamp"][last_idx].day)
+end_date = start_date + datetime.timedelta(days=7)
 # df["School Day?"] = df["Timestamp"].apply(lambda x: x.weekday() < 5)
 # This is a basic version -- need to add in actual school calendar including days off and then
 # do some sort of lambda x : some map.get(x) == true
@@ -57,9 +66,13 @@ end_date = datetime.date(df["Timestamp"][last_idx].year, df["Timestamp"][last_id
 # the end date is reduced by 1 because it's immediately incremented and because there's no guarantee
 # that the day before the last day logged will have data, so you could miss out on the last day if you
 # just used <
-while start_date <= end_date - datetime.timedelta(days=1):
-    start_date += datetime.timedelta(days=1)
+while start_date < end_date:
+    print("START DATE: ")
+    print(start_date)
+    print("END DATE: ")
+    print(end_date)
     school_calendar[start_date] = (start_date.weekday() < 5)
+    start_date += datetime.timedelta(days=1)
 # This can and should be modified to include weekdays that are
 # days off from school -- for now this is just a placeholder
 
