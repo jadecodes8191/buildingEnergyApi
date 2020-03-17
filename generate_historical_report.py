@@ -72,6 +72,7 @@ def get_interval_data(date_time, room=None):
 
 
 get_interval_data(datetime(2020, 2, 14, 7, 0, 3), 225)  # test function call 3/11 -- works perfectly!
+# TODO: figure out how to make it applicable to any second within the minute
 
 
 # Function defs from task II
@@ -91,13 +92,18 @@ def check_carbon(x):
 
 
 new_data = df_test_copy.copy().reset_index()
+new_data_copy = new_data.copy()
 
+new_data_copy["Weekday"] = new_data_copy["New Column"].apply(lambda x: x.weekday())
+new_data_copy.to_csv("basic_weekly.csv")
 co2_min = 200
 # TODO: Fix this placeholder value
 
-for i in range(0, 7):
+for i in range(0, 5):
     # TODO: for each day, filter (in task 2 style) & create daily problem report. Append this to a database,
     #  which will serve as a task 3 equivalent
+
+    new_data = new_data_copy[new_data_copy["Weekday"] == i]
 
     # Beginning of Section Modified from Task II
 
@@ -107,13 +113,14 @@ for i in range(0, 7):
     temp_data['High Temp?'] = temp_data.T.apply(check_temp)
     print("Temp Data")
     print(temp_data)
-    temp_data.to_sql("TemperatureProblemsDatabase", conn, if_exists='replace')
-    # temp_data.to_csv('tester.csv')
+    temp_data.to_sql("TemperatureProblemsDatabase", conn, if_exists='append')
+    temp_data.to_csv('tester.csv')
 
     # print("\nToo Much CO2: \n")
     carbon_data = new_data[(new_data.CO2 > co2_max) | (new_data.CO2 < co2_min)][['New Column', 'Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
     carbon_data['High Carbon?'] = carbon_data.T.apply(check_carbon)
-    carbon_data.to_sql("CarbonDioxideProblemsDatabase", conn, if_exists='replace')
+    carbon_data.to_sql("CarbonDioxideProblemsDatabase", conn, if_exists='append')
+    carbon_data.to_csv("weekly.csv")
 
     # End of Section Modified from Task II
     print("Daily Problems")
