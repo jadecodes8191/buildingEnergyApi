@@ -3,6 +3,7 @@ import pandas as pd
 import sqlite3
 import numpy as np
 from datetime import datetime
+import datetime as dt
 
 # Copyright 2018 Building Energy Gateway.  All rights reserved.
 
@@ -40,11 +41,11 @@ df = pd.read_sql("TempAndCO2LogFiltered", engine)
 
 print(df)
 df_test_copy = df.set_index("Timestamp")
-df_test_copy["New Column"] = pd.to_datetime(df_test_copy.index)
+df_test_copy["Timestamp"] = pd.to_datetime(df_test_copy.index)
 # for i in range(0, len(df_test_copy.index)):
 # df_test_copy["New Column"][i] = datetime.strptime(df_test_copy.index[i], "%a %b %d %H:%M:%S %Y")
 # print("Still working...")
-df_test_copy = df_test_copy.set_index(["New Column", "Room #"])
+df_test_copy = df_test_copy.set_index(["Timestamp", "Room #"])
 # print(week_start)
 print(datetime(2020, 2, 14, 7, 0, 3))
 print(df_test_copy.index)
@@ -92,15 +93,20 @@ def check_carbon(x):
 new_data = df_test_copy.copy().reset_index()
 new_data_copy = new_data.copy()
 
-new_data_copy["Weekday"] = new_data_copy["New Column"].apply(lambda x: x.weekday())
+new_data_copy["Weekday"] = new_data_copy["Timestamp"].apply(lambda x: x.weekday())
 new_data_copy.to_csv("basic_weekly.csv")
 co2_min = 200
 # TODO: Fix this placeholder value
 
-conn.cursor().execute("DROP TABLE TemperatureProblemsDatabase")
-conn.cursor().execute("DROP TABLE CarbonDioxideProblemsDatabase")
+# These drops AREN'T necessary! We are replacing the tables at the start of the loop anyways
+# conn.cursor().execute("DROP TABLE TemperatureProblemsDatabase")
+# conn.cursor().execute("DROP TABLE CarbonDioxideProblemsDatabase")
 
-for i in range(0, 5):
+filtered_log = pd.read_sql("TempAndCO2LogFiltered", engine)
+filtered_log.to_csv("weekly.csv")
+
+# temporarily (0,1) --> should be (0, 5) or (0, # of days)
+for i in range(0, 1):
     # TODO: for each day, filter (in task 2 style) & create daily problem report. Append this to a database,
     #  which will serve as a task 3 equivalent
 
@@ -110,7 +116,7 @@ for i in range(0, 5):
 
     # print("\nToo Cold: \n")
     temp_data = new_data[(new_data['Temperature'] < temp_min) | (new_data['Temperature'] > temp_max)]
-    temp_data = temp_data[['New Column', 'Room #', 'Temperature', 'CO2']].sort_values(by="Temperature", ascending=True)
+    temp_data = temp_data[['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by="Temperature", ascending=True)
     temp_data['High Temp?'] = temp_data.T.apply(check_temp)
     print("Temp Data")
     print(temp_data)
@@ -118,7 +124,7 @@ for i in range(0, 5):
     # temp_data.to_csv('tester.csv')
 
     # print("\nToo Much CO2: \n")
-    carbon_data = new_data[(new_data.CO2 > co2_max) | (new_data.CO2 < co2_min)][['New Column', 'Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
+    carbon_data = new_data[(new_data.CO2 > co2_max) | (new_data.CO2 < co2_min)][['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
     carbon_data['High Carbon?'] = carbon_data.T.apply(check_carbon)
     carbon_data.to_sql("CarbonDioxideProblemsDatabase", conn, if_exists='replace')  # should replace, because task three will run on one day of data at a time.
     # carbon_data.to_csv("weekly.csv")
@@ -127,15 +133,226 @@ for i in range(0, 5):
 
     # TODO: make a task 3 aggregation here.
 
-    # idk
+    temp_data = pd.read_sql_table("TemperatureProblemsDatabase", engine)  # might need this into the other sql table directly... probably easiest
+    temp_data = temp_data.sort_values("Room #")
+    temp_data.to_csv(SERVER_PATH + 'tester.csv')
+    co2_data = pd.read_sql_table("CarbonDioxideProblemsDatabase", engine)
 
+    weekly_log = new_data.copy()
+
+    # Convert times to integers so that they compare accurately
+
+    for x in range(0, len(temp_data['Timestamp'])):
+        temp_data['Timestamp'].loc[x] = (pd.to_datetime(temp_data['Timestamp'].loc[x]) - dt.timedelta(0))
+    for x in range(0, len(co2_data['Timestamp'])):
+        co2_data['Timestamp'].loc[x] = (pd.to_datetime(co2_data['Timestamp'].loc[x]) - dt.timedelta(0))
+    for x in range(0, len(weekly_log['Timestamp'])):
+        weekly_log['Timestamp'].loc[x] = (pd.to_datetime(weekly_log['Timestamp'].loc[x]) - dt.timedelta(0))
+
+    time_temp = temp_data.copy().set_index(["Room #", "Temperature"])
+    time_co2 = co2_data.copy().set_index(["Room #", "CO2"])
+    time_wkly_temp = weekly_log.copy().set_index(["Room #", "Temperature"])
+    time_wkly_co2 = weekly_log.copy().set_index(["Room #", "CO2"])
+
+    # Multi-index should identify a room and temp or co2 value uniquely for when we look for the times of h/l values
+
+    td_copy = temp_data.set_index("Room #").T
+    cd_copy = co2_data.set_index("Room #").T
+
+    weekly_log['Highest Temperature'] = weekly_log['Temperature']
+    weekly_log['Lowest Temperature'] = weekly_log['Temperature']
+    weekly_log['Highest CO2'] = weekly_log['CO2']
+    weekly_log['Lowest CO2'] = weekly_log['CO2']
+
+    # Groups low/high #s
+
+    weekly_log = weekly_log.groupby("Room #").agg({'Lowest Temperature': np.min,
+                                                   'Highest Temperature': np.max,
+                                                   'Highest CO2': np.max,
+                                                   'Lowest CO2': np.min})
+
+    # weekly_log.to_csv("tester.csv")
+
+    all_data = pd.merge(temp_data, co2_data, how='outer', on=['Room #'])
+    # all_data.to_csv("tester.csv")
+
+    # Finds number of intervals with a given problem for each room
+
+    weekly_log['Intervals Too Cold'] = None
+    weekly_log['Intervals Too Warm'] = None
+    weekly_log['Intervals Too Much CO2'] = None
+    weekly_log['Intervals Too Little CO2'] = None
+
+    for room in td_copy:
+        print("ROOM: ")
+        print(room)
+        intervals_temp = td_copy[room].T
+        intervals_temp['Intervals'] = None
+        if type(intervals_temp) == pd.Series:
+            intervals_temp = pd.DataFrame(intervals_temp).T
+        intervals_temp = intervals_temp.groupby("High Temp?").agg({"Intervals": np.size})
+        print("Temp Intervals: ")
+        print(intervals_temp)
+        if len(intervals_temp) == 1:
+            if intervals_temp.index[0] == 0:
+                weekly_log['Intervals Too Cold'][room] = (intervals_temp.iloc[0])[0]
+            else:
+                weekly_log['Intervals Too Warm'][room] = (intervals_temp.iloc[0])[0]
+        elif len(intervals_temp) == 2:
+            weekly_log['Intervals Too Cold'][room] = (intervals_temp.iloc[0])[0]
+            weekly_log['Intervals Too Warm'][room] = (intervals_temp.iloc[1])[0]
+
+    for room in cd_copy:
+        print("ROOM: ")
+        print(room)
+        intervals_co2 = cd_copy[room].T
+        intervals_co2['Intervals'] = None
+        if type(intervals_co2) == pd.Series:
+            intervals_co2 = pd.DataFrame(intervals_co2).T
+        intervals_co2 = intervals_co2.groupby("High Carbon?").agg({"Intervals": np.size})
+        print("CO2 Intervals: ")
+        print(intervals_co2)
+        if len(intervals_co2) == 1:
+            if intervals_co2.index[0] == 0:
+                weekly_log['Intervals Too Little CO2'][room] = (intervals_co2.iloc[0])[0]
+            else:
+                weekly_log['Intervals Too Much CO2'][room] = (intervals_co2.iloc[0])[0]
+        elif len(intervals_co2) == 2:
+            weekly_log['Intervals Too Little CO2'][room] = (intervals_co2.iloc[0])[0]
+            weekly_log['Intervals Too Much CO2'][room] = (intervals_co2.iloc[1])[0]
+
+    # go back into time database (copied from original database) and locate timestamps
+
+    weekly_log['First Time Too Cold'] = None
+    weekly_log['First Time Too Warm'] = None
+    weekly_log['Last Time Too Cold'] = None
+    weekly_log['Last Time Too Warm'] = None
+
+    for room in time_temp.index:
+        room_number = room[0]
+        temp_df = time_temp.loc[room_number]
+        temp_df['First Time'] = temp_df['Timestamp']
+        temp_df['Last Time'] = temp_df['Timestamp']
+        temp_df = temp_df.groupby("High Temp?").agg({"First Time": np.min, "Last Time": np.max})
+        early_times = temp_df['First Time']
+        if len(early_times) == 1:
+            if early_times.index[0] == 0:
+                weekly_log['First Time Too Cold'][room_number] = early_times.iloc[0]
+            else:
+                weekly_log['First Time Too Warm'][room_number] = early_times.iloc[0]
+        elif len(early_times) == 2:
+            print(early_times)
+            weekly_log['First Time Too Cold'][room_number] = early_times.iloc[0]
+            weekly_log['First Time Too Warm'][room_number] = early_times.iloc[1]
+            # make sure data is sorted before this happens!!! I think it is sorted because of the groupby
+        late_times = temp_df['Last Time']
+        if len(late_times) == 1:
+            if late_times.index[0] == 0:
+                weekly_log['Last Time Too Cold'][room_number] = late_times.iloc[0]
+            else:
+                weekly_log['Last Time Too Warm'][room_number] = late_times.iloc[0]
+        elif len(late_times) == 2:
+            print(late_times)
+            weekly_log['Last Time Too Cold'][room_number] = late_times[0]
+            weekly_log['Last Time Too Warm'][room_number] = late_times[1]
+            # make sure data is sorted before this happens!!! I think it is sorted because of the groupby
+
+    weekly_log['Time of Lowest Temperature'] = None
+    weekly_log['Time of Highest Temperature'] = None
+    weekly_log['Time of Highest CO2'] = None
+    weekly_log['Time of Lowest CO2'] = None
+    temp_data['Time of Lowest Temperature'] = None
+    temp_data['Time of Highest Temperature'] = None
+    co2_data['Time of Lowest CO2'] = None
+    co2_data['Time of Highest CO2'] = None
+
+
+    def convert_datetime(z):
+        if type(z) == str:
+            return z
+        elif type(z) == pd.Timestamp:
+            print(type(datetime.strftime(z.to_pydatetime(), '%Y-%m-%d %H:%M:%S')))
+            return datetime.strftime(z.to_pydatetime(), '%Y-%m-%d %H:%M:%S')
+
+
+    # finds times of high/low temps on a daily basis... this isn't actually used in the final report but it might be good information to have
+
+    for room in time_wkly_temp.index:
+        low_temps = time_wkly_temp.loc[room[0]].loc[weekly_log['Lowest Temperature'][room[0]]]['Timestamp']
+        high_temps = time_wkly_temp.loc[room[0]].loc[weekly_log['Highest Temperature'][room[0]]]['Timestamp']
+        if type(low_temps) == pd.Series:
+            weekly_log['Time of Lowest Temperature'][room[0]] = convert_datetime(low_temps.iloc[0])
+        else:
+            weekly_log['Time of Lowest Temperature'][room[0]] = convert_datetime(low_temps)
+        if type(high_temps) == pd.Series:
+            weekly_log['Time of Highest Temperature'][room[0]] = convert_datetime(high_temps.iloc[0])
+        else:
+            weekly_log['Time of Highest Temperature'][room[0]] = convert_datetime(high_temps)
+        temp_data['Time of Lowest Temperature'][room[0]] = weekly_log['Time of Lowest Temperature'][room[0]]
+        temp_data['Time of Highest Temperature'][room[0]] = weekly_log['Time of Highest Temperature'][room[0]]
+
+    for room in time_wkly_co2.index:
+        low_co2 = time_wkly_co2.loc[room[0]].loc[weekly_log['Lowest CO2'][room[0]]]['Timestamp']
+        high_co2 = time_wkly_co2.loc[room[0]].loc[weekly_log['Highest CO2'][room[0]]]['Timestamp']
+        if type(low_co2) == pd.Series:
+            weekly_log['Time of Lowest CO2'][room[0]] = convert_datetime(low_co2.iloc[0])
+        else:
+            weekly_log['Time of Lowest CO2'][room[0]] = convert_datetime(low_co2)
+        if type(high_co2) == pd.Series:
+            weekly_log['Time of Highest CO2'][room[0]] = convert_datetime(high_co2.iloc[0])
+        else:
+            weekly_log['Time of Highest CO2'][room[0]] = convert_datetime(high_co2)
+        co2_data['Time of Lowest CO2'][room[0]] = weekly_log['Time of Lowest CO2'][room[0]]
+        co2_data['Time of Highest CO2'][room[0]] = weekly_log['Time of Highest CO2'][room[0]]
+
+    #weekly_log = pd.merge(all_data, weekly_log, how='outer', on=['Room #'])
+
+    # Converts to string so SQL can handle it
+    for x in range(0, len(weekly_log['First Time Too Cold'])):
+        weekly_log['First Time Too Cold'].iloc[x] = convert_datetime(weekly_log['First Time Too Cold'].iloc[x])
+        weekly_log['Last Time Too Cold'].iloc[x] = convert_datetime(weekly_log['Last Time Too Cold'].iloc[x])
+        weekly_log['First Time Too Warm'].iloc[x] = convert_datetime(weekly_log['First Time Too Warm'].iloc[x])
+        weekly_log['Last Time Too Warm'].iloc[x] = convert_datetime(weekly_log['Last Time Too Warm'].iloc[x])
+
+    for x in range(0, len(time_wkly_temp['Timestamp'])):
+        time_wkly_temp['Timestamp'].iloc[x] = convert_datetime(time_wkly_temp['Timestamp'].iloc[x])
+
+    for x in range(0, len(time_wkly_co2['Timestamp'])):
+        time_wkly_co2['Timestamp'].iloc[x] = convert_datetime(time_wkly_co2['Timestamp'].iloc[x])
+
+    time_wkly_temp = time_wkly_temp.reset_index()
+    time_wkly_co2 = time_wkly_co2.reset_index()
+    time_wkly_temp = time_wkly_temp.sort_values('Room #')
+    time_wkly_co2 = time_wkly_co2.sort_values('Room #')
+    # all_data.to_csv("tester.csv")
+
+    #time_wkly_temp.to_csv("tester.csv")
+
+    # Connect to databases
+
+    conn = sqlite3.connect(SERVER_PATH + PATH)
+    # all_data.to_sql("DailyDatabase", conn, if_exists='append')
+    time_wkly_temp.to_sql("DailyTempDatabase", conn, if_exists='append')
+    print(time_wkly_temp)
+    time_wkly_co2.to_sql("DailyCarbonDatabase", conn, if_exists='append')
+    weekly_log.to_sql("DailyDatabase", conn, if_exists='append')
+
+
+    # Clear all daily files so they're not repeated the next day
+
+    cursor = conn.cursor()
+
+    # Drops aren't necessary:
+    # TemperatureProblems and CarbonDioxideProblems DBs are "replaced" at the start of the loop
+    # Daily Log is reset to a copy of "new_data" at the start of the loop
     print("Daily Problems")
 
-sql_temp_test = pd.read_sql("TemperatureProblemsDatabase", engine)
-sql_co2_test = pd.read_sql("CarbonDioxideProblemsDatabase", engine)
-sql_temp_test.to_csv("tester.csv")
-sql_co2_test.to_csv("weekly.csv")
+# sql_temp_test = pd.read_sql("TemperatureProblemsDatabase", engine)
+# sql_co2_test = pd.read_sql("CarbonDioxideProblemsDatabase", engine)
+# sql_co2_test.to_csv("weekly.csv")
 
 # TODO: run task 4 on aggregation of daily problem reports
 # TODO: rename from "New Column" to "Timestamp" or something equivalent
 
+
+# NOTE: The old data that was in the Weekly Log table is saved in a table called OldWeeklyLog, fittingly.
