@@ -63,6 +63,7 @@ print(mi_test)
 
 
 # Gets interval data about a certain datetime, and the optional room parameter is passed in
+# Not needed yet...
 def get_interval_data(date_time, room=None):
     if room is None:
         print(df_test_copy.loc[str(date_time)])  # this works
@@ -71,8 +72,6 @@ def get_interval_data(date_time, room=None):
 
 
 # get_interval_data(datetime(2020, 2, 14, 7, 0, 3))  # test function call 3/11 -- works perfectly!
-# TODO: figure out how to make it applicable to any second within the minute
-
 
 # Function defs from task II
 def check_temp(x):
@@ -115,16 +114,21 @@ for i in range(0, 5):
     temp_data['High Temp?'] = temp_data.T.apply(check_temp)
     print("Temp Data")
     print(temp_data)
-    temp_data.to_sql("TemperatureProblemsDatabase", conn, if_exists='append')
+    temp_data.to_sql("TemperatureProblemsDatabase", conn, if_exists='replace')  # should replace, because task three will run on one day of data at a time.
     # temp_data.to_csv('tester.csv')
 
     # print("\nToo Much CO2: \n")
     carbon_data = new_data[(new_data.CO2 > co2_max) | (new_data.CO2 < co2_min)][['New Column', 'Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
     carbon_data['High Carbon?'] = carbon_data.T.apply(check_carbon)
-    carbon_data.to_sql("CarbonDioxideProblemsDatabase", conn, if_exists='append')
+    carbon_data.to_sql("CarbonDioxideProblemsDatabase", conn, if_exists='replace')  # should replace, because task three will run on one day of data at a time.
     # carbon_data.to_csv("weekly.csv")
 
     # End of Section Modified from Task II
+
+    # TODO: make a task 3 aggregation here.
+
+    # idk
+
     print("Daily Problems")
 
 sql_temp_test = pd.read_sql("TemperatureProblemsDatabase", engine)
