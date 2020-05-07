@@ -139,7 +139,7 @@ for i in range(0, 5):
     temp_data.to_csv(SERVER_PATH + 'tester.csv')
     co2_data = pd.read_sql_table("CarbonDioxideProblemsDatabase", engine)
 
-    weekly_log = new_data.copy()
+    weekly_log = new_data.copy().reset_index().drop("level_0", axis=1)
 
     # Convert times to integers so that they compare accurately
 
@@ -148,6 +148,7 @@ for i in range(0, 5):
     for x in range(0, len(co2_data['Timestamp'])):
         co2_data['Timestamp'].loc[x] = (pd.to_datetime(co2_data['Timestamp'].loc[x]) - dt.timedelta(0))
     for x in range(0, len(weekly_log['Timestamp'])):
+        print(weekly_log["Timestamp"])
         weekly_log['Timestamp'].loc[x] = (pd.to_datetime(weekly_log['Timestamp'].loc[x]) - dt.timedelta(0))
 
     time_temp = temp_data.copy().set_index(["Room #", "Temperature"])
