@@ -38,30 +38,30 @@ df = pd.read_sql("TempAndCO2LogFiltered", engine)
 # week_start_year = input("Year: ")
 
 # week_start = datetime.strptime(week_start_month + " " + week_start_day + " " + week_start_year + " 10:30:02", "%m %d %Y %H:%M:%S")
-# print(week_start)
+# #print(week_start)
 
-print(df)
+# #print(df)
 df_test_copy = df.set_index("Timestamp")
 df_test_copy["Timestamp"] = pd.to_datetime(df_test_copy.index)
 # for i in range(0, len(df_test_copy.index)):
 # df_test_copy["New Column"][i] = datetime.strptime(df_test_copy.index[i], "%a %b %d %H:%M:%S %Y")
-# print("Still working...")
+# #print("Still working...")
 df_test_copy = df_test_copy.set_index(["Timestamp", "Room #"])
-# print(week_start)
-print(datetime(2020, 2, 14, 7, 0, 3))
-print(df_test_copy.index)
-print(df_test_copy)
-# print(df_test_copy.loc[str(week_start)])
+# #print(week_start)
+# #print(datetime(2020, 2, 14, 7, 0, 3))
+# #print(df_test_copy.index)
+# #print(df_test_copy)
+# #print(df_test_copy.loc[str(week_start)])
 # the above line works if you add in the desired room # or not - use .loc to get a row
 
-mi_test = pd.DataFrame(np.array([[3, 2, 1], [4, 5, 5], [7, 48, 9]]), columns=[1, 3, 5])
-print(mi_test)
-print(mi_test.loc[0])
-mi_test = mi_test.set_index([1, 3])
-print(mi_test)
+#mi_test = pd.DataFrame(np.array([[3, 2, 1], [4, 5, 5], [7, 48, 9]]), columns=[1, 3, 5])
+##print(mi_test)
+##print(mi_test.loc[0])
+#mi_test = mi_test.set_index([1, 3])
+##print(mi_test)
 
-# print(mi_test[mi_test.index[0]])
-# print(mi_test.loc[(1732, 222)])# produces a key error
+# #print(mi_test[mi_test.index[0]])
+# #print(mi_test.loc[(1732, 222)])# produces a key error
 
 
 # Gets interval data about a certain datetime, and the optional room parameter is passed in
@@ -77,8 +77,8 @@ def get_interval_data(date_time, room=None):
 
 # Function defs from task II
 def check_temp(x):
-    print("Start of x:")
-    print(x)
+    ##print("Start of x:")
+    ##print(x)
     if x['Temperature'] > temp_max:
         return True
     return False
@@ -115,16 +115,20 @@ for i in range(0, 5):
 
     # Beginning of Section Modified from Task II
 
-    # print("\nToo Cold: \n")
+    # #print("\nToo Cold: \n")
     temp_data = new_data[(new_data['Temperature'] < temp_min) | (new_data['Temperature'] > temp_max)]
     temp_data = temp_data[['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by="Temperature", ascending=True)
     temp_data['High Temp?'] = temp_data.T.apply(check_temp)
-    print("Temp Data")
-    print(temp_data)
+    ##print("Temp Data")
+    ##print(i)
+    ##print(temp_data)
+    # temp_data.to_csv("tester.csv")
+    # random_testing_copy = temp_data.copy().reset_index()
+    # for i in range(temp_data.size):
+    #   #print(random_testing_copy.loc[i])
     temp_data.to_sql("TemperatureProblemsDatabase", conn, if_exists='replace')  # should replace, because task three will run on one day of data at a time.
-    # temp_data.to_csv('tester.csv')
 
-    # print("\nToo Much CO2: \n")
+    # #print("\nToo Much CO2: \n")
     carbon_data = new_data[(new_data.CO2 > co2_max) | (new_data.CO2 < co2_min)][['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
     carbon_data['High Carbon?'] = carbon_data.T.apply(check_carbon)
     carbon_data.to_sql("CarbonDioxideProblemsDatabase", conn, if_exists='replace')  # should replace, because task three will run on one day of data at a time.
@@ -148,7 +152,7 @@ for i in range(0, 5):
     for x in range(0, len(co2_data['Timestamp'])):
         co2_data['Timestamp'].loc[x] = (pd.to_datetime(co2_data['Timestamp'].loc[x]) - dt.timedelta(0))
     for x in range(0, len(weekly_log['Timestamp'])):
-        print(weekly_log["Timestamp"])
+        #print(weekly_log["Timestamp"])
         weekly_log['Timestamp'].loc[x] = (pd.to_datetime(weekly_log['Timestamp'].loc[x]) - dt.timedelta(0))
 
     time_temp = temp_data.copy().set_index(["Room #", "Temperature"])
@@ -186,15 +190,15 @@ for i in range(0, 5):
     weekly_log['Intervals Too Little CO2'] = None
 
     for room in td_copy:
-        print("ROOM: ")
-        print(room)
+        #print("ROOM: ")
+        #print(room)
         intervals_temp = td_copy[room].T
         intervals_temp['Intervals'] = None
         if type(intervals_temp) == pd.Series:
             intervals_temp = pd.DataFrame(intervals_temp).T
         intervals_temp = intervals_temp.groupby("High Temp?").agg({"Intervals": np.size})
-        print("Temp Intervals: ")
-        print(intervals_temp)
+        #print("Temp Intervals: ")
+        #print(intervals_temp)
         if len(intervals_temp) == 1:
             if intervals_temp.index[0] == 0:
                 weekly_log['Intervals Too Cold'][room] = (intervals_temp.iloc[0])[0]
@@ -205,15 +209,15 @@ for i in range(0, 5):
             weekly_log['Intervals Too Warm'][room] = (intervals_temp.iloc[1])[0]
 
     for room in cd_copy:
-        print("ROOM: ")
-        print(room)
+        #print("ROOM: ")
+        #print(room)
         intervals_co2 = cd_copy[room].T
         intervals_co2['Intervals'] = None
         if type(intervals_co2) == pd.Series:
             intervals_co2 = pd.DataFrame(intervals_co2).T
         intervals_co2 = intervals_co2.groupby("High Carbon?").agg({"Intervals": np.size})
-        print("CO2 Intervals: ")
-        print(intervals_co2)
+        #print("CO2 Intervals: ")
+        #print(intervals_co2)
         if len(intervals_co2) == 1:
             if intervals_co2.index[0] == 0:
                 weekly_log['Intervals Too Little CO2'][room] = (intervals_co2.iloc[0])[0]
@@ -243,7 +247,7 @@ for i in range(0, 5):
             else:
                 weekly_log['First Time Too Warm'][room_number] = early_times.iloc[0]
         elif len(early_times) == 2:
-            print(early_times)
+            #print(early_times)
             weekly_log['First Time Too Cold'][room_number] = early_times.iloc[0]
             weekly_log['First Time Too Warm'][room_number] = early_times.iloc[1]
             # make sure data is sorted before this happens!!! I think it is sorted because of the groupby
@@ -254,7 +258,7 @@ for i in range(0, 5):
             else:
                 weekly_log['Last Time Too Warm'][room_number] = late_times.iloc[0]
         elif len(late_times) == 2:
-            print(late_times)
+            #print(late_times)
             weekly_log['Last Time Too Cold'][room_number] = late_times[0]
             weekly_log['Last Time Too Warm'][room_number] = late_times[1]
             # make sure data is sorted before this happens!!! I think it is sorted because of the groupby
@@ -273,7 +277,7 @@ for i in range(0, 5):
         if type(z) == str:
             return z
         elif type(z) == pd.Timestamp:
-            print(type(datetime.strftime(z.to_pydatetime(), '%Y-%m-%d %H:%M:%S')))
+            #print(type(datetime.strftime(z.to_pydatetime(), '%Y-%m-%d %H:%M:%S')))
             return datetime.strftime(z.to_pydatetime(), '%Y-%m-%d %H:%M:%S')
 
 
@@ -335,14 +339,14 @@ for i in range(0, 5):
     conn = sqlite3.connect(SERVER_PATH + PATH)
     # all_data.to_sql("DailyDatabase", conn, if_exists='append')
     time_wkly_temp.to_sql("DailyTempDatabase", conn, if_exists='append')
-    print(time_wkly_temp)
+    #print(time_wkly_temp)
     time_wkly_co2.to_sql("DailyCarbonDatabase", conn, if_exists='append')
     weekly_log.to_sql("DailyDatabase", conn, if_exists='append')
 
     # Drops aren't necessary:
     # TemperatureProblems and CarbonDioxideProblems DBs are "replaced" at the start of the loop
     # Daily Log is reset to a copy of "new_data" at the start of the loop
-    print("Daily Problems")
+    #print("Daily Problems")
 
 # sql_temp_test = pd.read_sql("TemperatureProblemsDatabase", engine)
 # sql_co2_test = pd.read_sql("CarbonDioxideProblemsDatabase", engine)
@@ -374,7 +378,7 @@ for x in range(0, len(daily_data['First Time Too Cold'])):
     daily_data['First Time Too Warm'].loc[x] = convert_back(daily_data['First Time Too Warm'].loc[x])
     daily_data['Last Time Too Warm'].loc[x] = convert_back(daily_data['Last Time Too Warm'].loc[x])
 
-print(daily_data['Last Time Too Cold'])
+#print(daily_data['Last Time Too Cold'])
 
 
 def none_to_nan(x):
@@ -410,10 +414,14 @@ daily_data['Intervals Too Cold'] = daily_data['Intervals Too Cold'].apply(conver
 daily_data['Intervals Too Much CO2'] = daily_data['Intervals Too Much CO2'].apply(convert_to_int)
 daily_data['Intervals Too Little CO2'] = daily_data['Intervals Too Little CO2'].apply(convert_to_int)
 
-print(daily_data['First Time Too Cold'])
-print(daily_data['Last Time Too Cold'])
+#print(daily_data['First Time Too Cold'])
+#print(daily_data['Last Time Too Cold'])
 
-daily_data = daily_data.groupby("Room #").agg({"Days With Problems": np.size,
+#print(daily_data.where(daily_data["Room #"] == "Mars"))
+
+daily_data = daily_data.groupby("Room #")
+
+daily_data = daily_data.agg({"Days With Problems": np.size,
                                                "Intervals Too Warm": np.sum,
                                                "Intervals Too Cold": np.sum,
                                                "Intervals Too Much CO2": np.sum,

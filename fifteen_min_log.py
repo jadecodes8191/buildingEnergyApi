@@ -101,17 +101,17 @@ ahs_air_data.close()
 PATH = 'my_file'
 # ^this works on the server also
 
-# Log raw data into permanent database
 df = pd.read_csv(SERVER_PATH + 'ahs_air_data.csv', names=['Timestamp', 'Room #', 'Temperature', 'Temp. Units', 'CO2', 'CO2 Units'])
+# df = pd.DataFrame()
 
 # Time Testing Cont'd. (not real rooms, unrealistic values should indicate if these get into any permanent databases, but they shouldn't
 '''
-my_test_room = pd.Series(['Sun Nov 10 17:00:00 2019', '000', -890, 'deg C', -30, 'ppm'], index=df.T.index)
-my_second_test_room = pd.Series(['Wed Nov 6 16:00:00 2019', '543', -800, 'deg C', -8080, 'ppm'], index=df.T.index)
-my_third_test_room = pd.Series(['Mon Nov 11 16:00:00 2019', '000', -990, 'deg C', -50, 'ppm'], index=df.T.index)
-my_fourth_test_room = pd.Series(['Wed Nov 6 19:00:00 2019', '543', 4000, 'deg C', 8, 'ppm'], index=df.T.index)
-my_fifth_test_room = pd.Series(['Mon Nov 11 21:00:00 2019', '543', -909090, 'deg C', 8, 'ppm'], index=df.T.index)
-my_sixth_test_room = pd.Series(['Thu Oct 31 17:00:00 2019', '000', -890, 'deg C', -30, 'ppm'], index=df.T.index)
+my_test_room = pd.Series(['Mon Mar 23 17:00:00 2020', '000', -890, 'deg C', -30, 'ppm'], index=df.T.index)
+my_second_test_room = pd.Series(['Mon Mar 23 16:00:00 2020', '543', -800, 'deg C', -8080, 'ppm'], index=df.T.index)
+my_third_test_room = pd.Series(['Tue Mar 24 16:00:00 2020', '000', -990, 'deg C', -50, 'ppm'], index=df.T.index)
+my_fourth_test_room = pd.Series(['Tue Mar 24 19:00:00 2020', '543', 4000, 'deg C', 8, 'ppm'], index=df.T.index)
+my_fifth_test_room = pd.Series(['Wed Mar 25 21:00:00 2020', '543', -909090, 'deg C', 8, 'ppm'], index=df.T.index)
+my_sixth_test_room = pd.Series(['Wed Mar 25 17:00:00 2020', '000', -890, 'deg C', -30, 'ppm'], index=df.T.index)
 
 
 df = df.append(my_test_room, ignore_index=True)
@@ -120,15 +120,13 @@ df = df.append(my_third_test_room, ignore_index=True)
 df = df.append(my_fourth_test_room, ignore_index=True)
 df = df.append(my_fifth_test_room, ignore_index=True)
 df = df.append(my_sixth_test_room, ignore_index=True)
-'''
 
-'''
-my_seventh_test_room = pd.Series(['Sun Dec 1 17:00:00 2019', 'Mars', -10000, 'deg C', -3, 'ppm'], index=df.T.index)
-my_eighth_test_room = pd.Series(['Mon Dec 2 12:00:00 2019', 'Mars', 42938, 'deg C', 98, 'ppm'], index=df.T.index)
-my_ninth_test_room = pd.Series(['Mon Dec 2 13:00:00 2019', 'Mars', 5, 'deg C', 1500, 'ppm'], index=df.T.index)
-my_tenth_test_room = pd.Series(['Wed Dec 4 01:00:00 2019', 'Europa', 5983, 'deg C', 2985, 'ppm'], index=df.T.index)
-my_eleventh_test_room = pd.Series(['Fri Nov 22 09:00:00 2019', 'Europa', -9, 'deg C', 9900, 'ppm'], index=df.T.index)
-my_twelfth_test_room = pd.Series(['Thu Oct 31 18:00:00 2019', 'Europa', 0, 'deg C', -3092, 'ppm'], index=df.T.index)
+my_seventh_test_room = pd.Series(['Wed Mar 25 17:00:00 2020', 'Mars', -10000, 'deg C', -3, 'ppm'], index=df.T.index)
+my_eighth_test_room = pd.Series(['Wed Mar 25 12:00:00 2020', 'Mars', 42938, 'deg C', 98, 'ppm'], index=df.T.index)
+my_ninth_test_room = pd.Series(['Thu Mar 26 13:00:00 2020', 'Mars', 5, 'deg C', 1500, 'ppm'], index=df.T.index)
+my_tenth_test_room = pd.Series(['Thu Mar 26 01:00:00 2020', 'Europa', 5983, 'deg C', 2985, 'ppm'], index=df.T.index)
+my_eleventh_test_room = pd.Series(['Fri Mar 27 09:00:00 2020', 'Europa', -9, 'deg C', 9900, 'ppm'], index=df.T.index)
+my_twelfth_test_room = pd.Series(['Fri Mar 27 18:00:00 2020', 'Europa', 0, 'deg C', -3092, 'ppm'], index=df.T.index)
 
 
 df = df.append(my_seventh_test_room, ignore_index=True)
@@ -137,18 +135,18 @@ df = df.append(my_ninth_test_room, ignore_index=True)
 df = df.append(my_tenth_test_room, ignore_index=True)
 df = df.append(my_eleventh_test_room, ignore_index=True)
 df = df.append(my_twelfth_test_room, ignore_index=True)
-'''
 
-'''
+
+
 
 #Test Set 1 -- Interval 1, Day 1
 
-my_thirteenth_test_room = pd.Series(['Thu Nov 22 01:00:00 2017', 'Mars', 70, 'deg F', 1199, 'ppm'], index=df.T.index)
-my_fourteenth_test_room = pd.Series(['Thu Nov 22 10:00:00 2017', 'Mars', 70, 'deg F', 98, 'ppm'], index=df.T.index)
-my_fifteenth_test_room = pd.Series(['Thu Nov 22 09:00:00 2017', 'Mars', 5, 'deg F', 1500, 'ppm'], index=df.T.index)
-my_sixteenth_test_room = pd.Series(['Thu Nov 22 13:00:00 2017', 'Europa', 1000, 'deg F', 1100, 'ppm'], index=df.T.index)
-my_seventeenth_test_room = pd.Series(['Thu Nov 22 14:00:00 2017', 'Europa', 1960, 'deg F', 1929, 'ppm'], index=df.T.index)
-my_eighteenth_test_room = pd.Series(['Thu Nov 22 04:00:00 2017', 'Europa', 70, 'deg F', 1000, 'ppm'], index=df.T.index)
+my_thirteenth_test_room = pd.Series(['Thu Mar 26 01:00:00 2020', 'Mars', 70, 'deg F', 1199, 'ppm'], index=df.T.index)
+my_fourteenth_test_room = pd.Series(['Thu Mar 26 10:00:00 2020', 'Mars', 70, 'deg F', 98, 'ppm'], index=df.T.index)
+my_fifteenth_test_room = pd.Series(['Thu Mar 26 09:00:00 2020', 'Mars', 5, 'deg F', 1500, 'ppm'], index=df.T.index)
+my_sixteenth_test_room = pd.Series(['Thu Mar 26 13:00:00 2020', 'Europa', 1000, 'deg F', 1100, 'ppm'], index=df.T.index)
+my_seventeenth_test_room = pd.Series(['Thu Mar 26 14:00:00 2020', 'Europa', 1960, 'deg F', 1929, 'ppm'], index=df.T.index)
+my_eighteenth_test_room = pd.Series(['Thu Mar 26 04:00:00 2020', 'Europa', 70, 'deg F', 1000, 'ppm'], index=df.T.index)
 
 
 df = df.append(my_thirteenth_test_room, ignore_index=True)
@@ -158,18 +156,18 @@ df = df.append(my_sixteenth_test_room, ignore_index=True)
 df = df.append(my_seventeenth_test_room, ignore_index=True)
 df = df.append(my_eighteenth_test_room, ignore_index=True)
 
-#'''
 
-'''
+
+
 
 #Test Set 2 -- Interval 2, Day 2
 
-my_seventh_test_room = pd.Series(['Fri Nov 23 17:00:00 2017', 'Mars', 70, 'deg C', 1199, 'ppm'], index=df.T.index)
-my_eighth_test_room = pd.Series(['Fri Nov 23 12:00:00 2017', 'Mars', 70, 'deg C', 1199, 'ppm'], index=df.T.index)
-my_ninth_test_room = pd.Series(['Fri Nov 23 13:00:00 2017', 'Mars', 70, 'deg C', 1199, 'ppm'], index=df.T.index)
-my_tenth_test_room = pd.Series(['Fri Nov 23 01:00:00 2017', 'Europa', 5983, 'deg C', 2985, 'ppm'], index=df.T.index)
-my_eleventh_test_room = pd.Series(['Fri Nov 23 09:00:00 2017', 'Europa', -9, 'deg C', 9900, 'ppm'], index=df.T.index)
-my_twelfth_test_room = pd.Series(['Fri Nov 23 18:00:00 2017', 'Europa', 0, 'deg C', -3092, 'ppm'], index=df.T.index)
+my_seventh_test_room = pd.Series(['Fri Mar 27 17:00:00 2020', 'Mars', 70, 'deg C', 1199, 'ppm'], index=df.T.index)
+my_eighth_test_room = pd.Series(['Fri Mar 27 12:00:00 2020', 'Mars', 70, 'deg C', 1199, 'ppm'], index=df.T.index)
+my_ninth_test_room = pd.Series(['Fri Mar 27 13:00:00 2020', 'Mars', 70, 'deg C', 1199, 'ppm'], index=df.T.index)
+my_tenth_test_room = pd.Series(['Fri Mar 27 01:00:00 2020', 'Europa', 5983, 'deg C', 2985, 'ppm'], index=df.T.index)
+my_eleventh_test_room = pd.Series(['Fri Mar 27 09:00:00 2020', 'Europa', -9, 'deg C', 9900, 'ppm'], index=df.T.index)
+my_twelfth_test_room = pd.Series(['Fri Mar 27 18:00:00 2020', 'Europa', 0, 'deg C', -3092, 'ppm'], index=df.T.index)
 
 
 df = df.append(my_seventh_test_room, ignore_index=True)
@@ -179,18 +177,18 @@ df = df.append(my_tenth_test_room, ignore_index=True)
 df = df.append(my_eleventh_test_room, ignore_index=True)
 df = df.append(my_twelfth_test_room, ignore_index=True)
 
-#'''
 
-'''
 
-#Test Set 3: Interval 3, Day 3
 
-my_seventh_test_room = pd.Series(['Sat Nov 24 17:00:00 2017', 'Mars', 80, 'deg C', 1201, 'ppm'], index=df.T.index)
-my_eighth_test_room = pd.Series(['Sat Nov 24 12:00:00 2017', 'Mars', 70, 'deg C', 1199, 'ppm'], index=df.T.index)
-my_ninth_test_room = pd.Series(['Sat Nov 24 13:00:00 2017', 'Mars', 70, 'deg C', 1199, 'ppm'], index=df.T.index)
-my_tenth_test_room = pd.Series(['Sat Nov 24 01:00:00 2017', 'Europa', 59, 'deg C', 2985, 'ppm'], index=df.T.index)
-my_eleventh_test_room = pd.Series(['Sat Nov 24 09:00:00 2017', 'Europa', 90, 'deg C', 9900, 'ppm'], index=df.T.index)
-my_twelfth_test_room = pd.Series(['Sat Nov 24 18:00:00 2017', 'Europa', 0, 'deg C', -3093, 'ppm'], index=df.T.index)
+
+# Test Set 3: Interval 3, Day 3
+
+my_seventh_test_room = pd.Series(['Tue Mar 24 17:00:00 2020', 'Mars', 80, 'deg C', 1201, 'ppm'], index=df.T.index)
+my_eighth_test_room = pd.Series(['Tue Mar 24 12:00:00 2020', 'Mars', 70, 'deg C', 1199, 'ppm'], index=df.T.index)
+my_ninth_test_room = pd.Series(['Tue Mar 24 13:00:00 2020', 'Mars', 70, 'deg C', 1199, 'ppm'], index=df.T.index)
+my_tenth_test_room = pd.Series(['Tue Mar 24 01:00:00 2020', 'Europa', 59, 'deg C', 2985, 'ppm'], index=df.T.index)
+my_eleventh_test_room = pd.Series(['Tue Mar 24 09:00:00 2020', 'Europa', 90, 'deg C', 9900, 'ppm'], index=df.T.index)
+my_twelfth_test_room = pd.Series(['Tue Mar 24 18:00:00 2020', 'Europa', 0, 'deg C', -3093, 'ppm'], index=df.T.index)
 
 
 df = df.append(my_seventh_test_room, ignore_index=True)
