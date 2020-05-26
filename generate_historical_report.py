@@ -179,7 +179,7 @@ for i in range(0, 5):
 
     # weekly_log.to_csv("tester.csv")
 
-    all_data = pd.merge(temp_data, co2_data, how='outer', on=['Room #'])
+    all_data = pd.merge(temp_data, co2_data, how='outer', on=['Room #', "Timestamp", "Temperature", "CO2"]).drop("index_x", axis=1).drop("index_y", axis=1)
     # all_data.to_csv("tester.csv")
 
     # Finds number of intervals with a given problem for each room
@@ -337,7 +337,7 @@ for i in range(0, 5):
     # Connect to databases
 
     conn = sqlite3.connect(SERVER_PATH + PATH)
-    # all_data.to_sql("DailyDatabase", conn, if_exists='append')
+    all_data.to_sql("FilteredT3Database", conn, if_exists='append')
     time_wkly_temp.to_sql("DailyTempDatabase", conn, if_exists='append')
     #print(time_wkly_temp)
     time_wkly_co2.to_sql("DailyCarbonDatabase", conn, if_exists='append')
@@ -358,6 +358,14 @@ daily_data = pd.read_sql_table("DailyDatabase", engine)
 daily_data['Days With Problems'] = None
 all_temps = pd.read_sql_table("DailyTempDatabase", engine)
 all_carbon = pd.read_sql_table("DailyCarbonDatabase", engine)
+days_with_problems = pd.read_sql_table("FilteredT3Database", engine)
+days_with_problems = days_with_problems.drop("index", axis=1)
+days_with_problems['Day'] = days_with_problems['Timestamp'].apply(lambda z: datetime.strftime(z, "%Y-%m-%d"))#kept as a string for now just to avoid automatic time assignment
+days_with_problems = days_with_problems.set_index(["Room #", "Day"])
+days_with_problems["Days With Problems"] = None
+days_with_problems = days_with_problems.groupby(level=[0, 1]).agg({"Days With Problems": np.size})
+days_with_problems = days_with_problems.groupby(level=0).agg({"Days With Problems": np.size})
+days_with_problems.to_csv("ahs_cold_data.csv")
 
 all_temps_copy = all_temps.set_index(['Room #', 'Temperature'])
 all_carbon_copy = all_carbon.set_index(['Room #', 'CO2'])
@@ -419,10 +427,11 @@ daily_data['Intervals Too Little CO2'] = daily_data['Intervals Too Little CO2'].
 
 #print(daily_data.where(daily_data["Room #"] == "Mars"))
 
+#days_with_problems = days_with_problems.groupby("")
+
 daily_data = daily_data.groupby("Room #")
 
-daily_data = daily_data.agg({"Days With Problems": np.size,
-                                               "Intervals Too Warm": np.sum,
+daily_data = daily_data.agg({"Intervals Too Warm": np.sum,
                                                "Intervals Too Cold": np.sum,
                                                "Intervals Too Much CO2": np.sum,
                                                "Intervals Too Little CO2": np.sum,
@@ -434,6 +443,7 @@ daily_data = daily_data.agg({"Days With Problems": np.size,
                                                "Last Time Too Warm": np.max,
                                                "First Time Too Cold": np.min,
                                                "Last Time Too Cold": np.max})
+daily_data = pd.merge(daily_data, days_with_problems, how='outer', on=['Room #'])
 
 daily_data['Time of Highest Temperature'] = None
 daily_data['Time of Lowest Temperature'] = None
@@ -500,14 +510,16 @@ cursor = conn.cursor()
 drop1 = "DROP TABLE DailyTempDatabase"
 drop2 = "DROP TABLE DailyCarbonDatabase"
 drop3 = "DROP TABLE DailyDatabase"
+drop4 = "DROP TABLE FilteredT3Database"
 cursor.execute(drop1)
 cursor.execute(drop2)
 cursor.execute(drop3)
+cursor.execute(drop4)
 
 # Task 4.5 -- creating the 4 more consolidated sheets
 
 original_file = pd.read_excel("output.xlsx")
-original_file.to_csv("tester.csv")
+#original_file.to_csv("tester.csv")
 
 # Cold Values
 cold_values = original_file[["Room #", "Days With Problems", "Intervals Too Cold", "Lowest Temperature", "Highest Temperature", "Mean Temperature", "Median Temperature", "First Time Too Cold", "Last Time Too Cold", "Time of Highest Temperature", "Time of Lowest Temperature"]]
@@ -522,7 +534,7 @@ for x in range(0, len(cold_values['Median Temperature'])):
         elif type(cold_values[category].iloc[x] == pd.Timestamp):
             temp_time = cold_values[category].iloc[x]
         cold_values[category].iloc[x] = datetime.strftime(temp_time, "%a %d %b %Y %H:%M")
-cold_values.to_csv("tester.csv")
+#cold_values.to_csv("tester.csv")
 cold_values.to_excel("cold.xlsx")
 
 # Warm Values
