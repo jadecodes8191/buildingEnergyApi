@@ -16,7 +16,7 @@ Main files to take a look at, which display the steps I took towards having a fu
   - This is the more in-depth version of the weekly report, which both makes use of databases and aggregates the data more systematically (first per day, and then per week), while storing the raw data to allow for more flexibility and use cases. It includes additional data, such as the mean and median temperature and carbon dioxide, as well as the first and last times certain issues were recorded for a room. These values are then consolidated into four separate spreadsheets for maximum readability. It should then send off the final weekly report (as an Excel file) to a mailing list.
   
 - Finally, switch to the historical-data-report branch to see the version I'm currently working on! Files of interest here are fifteen_min_log.py, task_zero.py, and generate_historical_report.py. 
-  - This version is a lot more streamlined towards the final product - it allows the user to generate a report from any week stored within the database immediately, and according to specified parameters, rather than waiting 5 days for the next report.
+  - This version is a lot more streamlined towards the final product - it allows the user to generate a report from any week stored within the database immediately, rather than waiting 5 days for the next report.
 
 As of 6/3/2020, the minimum viable product version of the final point (that is, there are several optimizations I'd like to make, but it is working) is almost done testing. 
 
