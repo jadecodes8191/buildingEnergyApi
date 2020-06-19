@@ -566,7 +566,7 @@ for x in range(0, len(high_co2['Median CO2'])):
         elif type(high_co2[category].iloc[x] == pd.Timestamp):
             temp_time = high_co2[category].iloc[x]
         high_co2[category].iloc[x] = datetime.strftime(temp_time, "%a %d %b %Y %H:%M")
-high_co2.to_csv("basic_weekly.csv")
+#high_co2.to_csv("basic_weekly.csv")
 high_co2.to_excel("high_co2.xlsx")
 
 # Low CO2 Values
