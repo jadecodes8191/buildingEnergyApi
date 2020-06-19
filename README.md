@@ -18,6 +18,6 @@ Main files to take a look at, which display the steps I took towards having a fu
 - Finally, switch to the historical-data-report branch to see the version I'm currently working on! Files of interest here are fifteen_min_log.py, task_zero.py, and generate_historical_report.py. 
   - This version is a lot more streamlined towards the final product - it allows the user to generate a report from any week stored within the database immediately, rather than waiting 5 days for the next report.
 
-As of 6/3/2020, the minimum viable product version of the final point (that is, there are several optimizations I'd like to make, but it is working) is almost done testing. 
+As of 6/18/2020, the minimum viable product version of the final point is working!
 
 
