@@ -49,13 +49,15 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
             room_num_list.append(i)
 
         print(i_df_list)
-        ax = plt.axes()
+        fig, ax = plt.subplots()
         ax.set_title(heading_list[j] + " in top 5 rooms w/ issue " + parenthetical_list[j])
         room_num_list.reverse()
         i_df_list.reverse()
         print(room_num_list)
         ax.set_yticklabels(room_num_list)
         plt.boxplot(i_df_list, vert=False)
+        plt.margins(0.2)
+        fig.tight_layout()
         export_pdf.savefig()
 
     for j in range(3):
