@@ -3,6 +3,7 @@
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.dates as dts
 import pandas as pd
 import datetime
 import numpy as np
@@ -104,18 +105,19 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
             for i in range(5):
                 ax = ax_list[i]
                 temp_db = db_list[i]
+                temp_db["Edited Timestamp"] = temp_db["Edited Timestamp"].apply(lambda x : dts.date2num(datetime.datetime.fromtimestamp(x)))
 
                 if co2_or_temp == 1:
-                    ax.plot(temp_db['Edited Timestamp'], temp_db["CO2"])  # line plot probably worked best but like...
+                    ax.plot_date(temp_db['Edited Timestamp'], temp_db["CO2"], fmt="-")  # line plot probably worked best but like...
                 else:
-                    ax.plot(temp_db["Edited Timestamp"], temp_db["Temperature"])
+                    ax.plot_date(temp_db["Edited Timestamp"], temp_db["Temperature"], fmt="-")
                 print("X Ticks")
                 new_x_tick_list = []
                 for x in ax.get_xticks():
                     print(x)
                     new_x_tick_list.append(datetime.datetime.strftime(datetime.datetime.fromtimestamp(x), "%H:%M"))
                 print(new_x_tick_list)
-                ax.set_xticklabels(new_x_tick_list)
+                ax.set_xticklabels(["7:00", "", "", "", "11:00", "", "", "", "3:00"], fontsize=5)
                 ax.set_title(title_list[i])
 
             fig.suptitle(heading_list[j] + " in room " + room_number + parenthetical_list[j])
