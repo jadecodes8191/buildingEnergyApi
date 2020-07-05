@@ -23,6 +23,18 @@ parenthetical_list = ["(Cold)", "(High CO2)", '(Warm)']
 
 with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_pdf:
 
+    # Stuff here
+
+    long_text = "Box Plots: Box plots (also known as box-and-whisker plots) are a way of showing data so that you can see both the range and where the middle part of the data lies. The “box” represents the 25th-75th percentile of data, and the orange line in the middle is the median. The “whiskers” extending from the box lead to the minimum and maximum (excluding outliers), and the outliers are represented by dots outside of the structure. For each room in one of the top 5 categories, a box plot is presented showing either its temperature or its carbon dioxide over the time data was collected. \n\nData Collection Methods: Data was logged every 15 minutes by the temperature and CO2 sensors in each classroom, only when school was in session (7am to 3pm Monday through Friday). The visualizations do not include rooms with likely sensor issues (those are in a table at the bottom of the report). \n\nDates: This data was logged for the week of "
+    first_time = datetime.datetime.strftime(datetime.datetime.strptime(real_orig_db["Timestamp"][0], "%Y-%m-%d %H:%M:%S"), "%Y-%m-%d")
+    long_text += first_time
+    print(long_text)
+    page1 = plt.figure()
+    page1.clf()
+    page1.text(0.15, 0.8, "Welcome to the weekly report!", size=20)
+    page1.text(0.15, 0.4, long_text, size=8, wrap=True)
+    export_pdf.savefig()
+
     # Box plots should probably come first
 
     for j in range(3):
