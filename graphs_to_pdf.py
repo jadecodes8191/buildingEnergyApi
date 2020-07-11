@@ -26,8 +26,12 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
     # Stuff here
 
     long_text = "Box Plots: Box plots (also known as box-and-whisker plots) are a way of showing data so that you can see both the range and where the middle part of the data lies. The “box” represents the 25th-75th percentile of data, and the orange line in the middle is the median. The “whiskers” extending from the box lead to the minimum and maximum (excluding outliers), and the outliers are represented by dots outside of the structure. For each room in one of the top 5 categories, a box plot is presented showing either its temperature or its carbon dioxide over the time data was collected. \n\nData Collection Methods: Data was logged every 15 minutes by the temperature and CO2 sensors in each classroom, only when school was in session (7am to 3pm Monday through Friday). The visualizations do not include rooms with likely sensor issues (those are in a table at the bottom of the report). \n\nDates: This data was logged for the week of "
-    first_time = datetime.datetime.strftime(datetime.datetime.strptime(real_orig_db["Timestamp"][0], "%Y-%m-%d %H:%M:%S"), "%Y-%m-%d")
+    first_time = datetime.datetime.strftime(datetime.datetime.strptime(real_orig_db["Timestamp"][0], "%Y-%m-%d %H:%M:%S"), "%B %d, %Y")
     long_text += first_time
+    long_text += " to "
+    last_time = datetime.datetime.strftime(datetime.datetime.strptime(real_orig_db["Timestamp"][0], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(days=5), "%B %d, %Y")
+    long_text += last_time
+    long_text += "."
     print(long_text)
     page1 = plt.figure()
     page1.clf()
@@ -42,11 +46,9 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
         orig_db = real_orig_db.copy()
         plt.figure()
         temp_df = temp_df.set_index("Room #").drop("Outside Air", errors='ignore')
-        temp_df = temp_df.drop("Field House NW", errors='ignore')
-        temp_df = temp_df.drop("Field House NE", errors='ignore')
-        temp_df = temp_df.drop("Field House SW", errors='ignore')
-        temp_df = temp_df.drop("Field House SE", errors='ignore')
-        # TODO: Should we drop Field House numbers?
+        for insignificant_room in ['Field House NW', "Field House NE", "Field House SW", "Field House SE", "CC Band & Choral ZN1", "CC Entry Hall & Common", "CC Multizone ZN1", "CC Multizone ZN2", "CC Multizone ZN3", "CC Multizone ZN4", "CC Scene Shop", "CC Seating", "CC Stage"]:
+            temp_df = temp_df.drop(insignificant_room, errors='ignore')
+
         temp_factor = temp_df.head()
         print(temp_factor)
         temp_factor = temp_factor.T
@@ -63,25 +65,37 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
         print(i_df_list)
         fig, ax = plt.subplots()
         ax.set_title(heading_list[j] + " in top 5 rooms w/ issue " + parenthetical_list[j])
-        room_num_list.reverse()
-        i_df_list.reverse()
+        #room_num_list.reverse()
+        #i_df_list.reverse()
+        # Reverse both lists...
         print(room_num_list)
-        ax.set_yticklabels(room_num_list)
-        plt.boxplot(i_df_list, vert=False)
+        ax.set_xticklabels(room_num_list)
+        ax.set_xlabel("Room #")
+        if j % 2 == 0:
+            ax.set_ylabel("Temperature (deg F)")
+        else:
+            ax.set_ylabel("CO2 (ppm)")
+        plt.boxplot(i_df_list, vert=True)
         plt.margins(0.2)
         fig.tight_layout()
         export_pdf.savefig()
 
     for j in range(3):
         orig_db = real_orig_db.copy()
-        co2_or_temp = (j % 2)
 
-        room_num_list = co2_temp_list[j].head()["Room #"]
+        co2_or_temp = (j % 2)
+        another_df = co2_temp_list[j].set_index("Room #")
+        for insignificant_room in ['Field House NW', "Field House NE", "Field House SW", "Field House SE", "CC Band & Choral ZN1", "CC Entry Hall & Common", "CC Multizone ZN1", "CC Multizone ZN2", "CC Multizone ZN3", "CC Multizone ZN4", "CC Scene Shop", "CC Seating", "CC Stage"]:
+            another_df = another_df.drop(insignificant_room, errors='ignore')
+        another_df = another_df.reset_index()
+        room_num_list = another_df.head()["Room #"]
         # Top 5 rooms
 
         for room_number in room_num_list:
-            orig_db = real_orig_db.copy()
-
+            orig_db = real_orig_db.copy().set_index(["Room #"])
+            for insignificant_room in ['Field House NW', "Field House NE", "Field House SW", "Field House SE", "CC Band & Choral ZN1", "CC Entry Hall & Common", "CC Multizone ZN1", "CC Multizone ZN2", "CC Multizone ZN3", "CC Multizone ZN4", "CC Scene Shop", "CC Seating", "CC Stage"]:
+                orig_db = orig_db.drop(insignificant_room, errors='ignore')
+            orig_db = orig_db.reset_index()
             orig_db = orig_db[orig_db["Room #"] == room_number]
             orig_db = orig_db[orig_db["Weekday"] < 5] # TODO: figure this out so incase the user inputs a day that's not Monday, we're not counting weekends!
             print(orig_db)
@@ -133,6 +147,13 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
                 print(new_x_tick_list)
                 ax.set_xticklabels(["7:00", "", "", "", "11:00", "", "", "", "3:00"], fontsize=5)
                 ax.set_title(title_list[i])
+                if i == 0:
+                    if co2_or_temp == 1:
+                        ax.set_ylabel("CO2 (ppm)")
+                    else:
+                        ax.set_ylabel("Temperature (deg F)")
+                if i == 2:
+                    ax.set_xlabel("Time")
 
             fig.suptitle(heading_list[j] + " in room " + room_number + parenthetical_list[j])
             export_pdf.savefig()
