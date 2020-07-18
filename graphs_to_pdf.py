@@ -13,7 +13,7 @@ df = pd.read_csv("graph_tester.csv")
 cold = pd.read_excel("cold.xlsx")
 warm = pd.read_excel("warm.xlsx")
 high_co2 = pd.read_excel("high_co2.xlsx")
-low_co2 = pd.read_excel("low_co2.xlsx")
+sensor_issues = pd.read_excel("low_co2.xlsx")
 real_orig_db = pd.read_csv("basic_weekly.csv")
 print(real_orig_db)
 
@@ -35,8 +35,10 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
     print(long_text)
     page1 = plt.figure()
     page1.clf()
+    page1.text(0.7, 0.03, "Visualizations by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
     page1.text(0.15, 0.8, "Welcome to the weekly report!", size=20)
     page1.text(0.15, 0.4, long_text, size=8, wrap=True)
+
     export_pdf.savefig()
 
     # Box plots should probably come first
@@ -44,12 +46,11 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
     for j in range(3):
         temp_df = co2_temp_list[j].copy()
         orig_db = real_orig_db.copy()
-        plt.figure()
         temp_df = temp_df.set_index("Room #").drop("Outside Air", errors='ignore')
         for insignificant_room in ['Field House NW', "Field House NE", "Field House SW", "Field House SE", "CC Band & Choral ZN1", "CC Entry Hall & Common", "CC Multizone ZN1", "CC Multizone ZN2", "CC Multizone ZN3", "CC Multizone ZN4", "CC Scene Shop", "CC Seating", "CC Stage"]:
             temp_df = temp_df.drop(insignificant_room, errors='ignore')
 
-        temp_factor = temp_df.head()
+        temp_factor = temp_df.head(10)
         print(temp_factor)
         temp_factor = temp_factor.T
         i_df_list = []
@@ -63,8 +64,9 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
             room_num_list.append(i)
 
         print(i_df_list)
+        page1 = plt.figure()
         fig, ax = plt.subplots()
-        ax.set_title(heading_list[j] + " in top 5 rooms w/ issue " + parenthetical_list[j])
+        ax.set_title(heading_list[j] + " in top 10 rooms w/ issue " + parenthetical_list[j])
         #room_num_list.reverse()
         #i_df_list.reverse()
         # Reverse both lists...
@@ -75,6 +77,8 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
             ax.set_ylabel("Temperature (deg F)")
         else:
             ax.set_ylabel("CO2 (ppm)")
+
+        fig.text(0.7, 0.03, "Visualization by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
         plt.boxplot(i_df_list, vert=True)
         plt.margins(0.2)
         fig.tight_layout()
@@ -88,7 +92,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
         for insignificant_room in ['Field House NW', "Field House NE", "Field House SW", "Field House SE", "CC Band & Choral ZN1", "CC Entry Hall & Common", "CC Multizone ZN1", "CC Multizone ZN2", "CC Multizone ZN3", "CC Multizone ZN4", "CC Scene Shop", "CC Seating", "CC Stage"]:
             another_df = another_df.drop(insignificant_room, errors='ignore')
         another_df = another_df.reset_index()
-        room_num_list = another_df.head()["Room #"]
+        room_num_list = another_df.head(10)["Room #"]
         # Top 5 rooms
 
         for room_number in room_num_list:
@@ -109,12 +113,12 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
             print(first_time)
 
             print("This is running")
-            plt.figure()
+            page1 = plt.figure()
 
             db_list = []
             new_list = []
             int_list = []
-            for i in range(5):
+            for i in range(10):
                 temp = datetime.datetime.strptime(first_time, "%Y-%m-%d %H:%M:%S") + datetime.timedelta(i)
                 db_list.append(orig_db[orig_db["Day"] == temp.date()])
                 new_list.append(datetime.datetime.strftime(temp, "%Y-%m-%d"))
@@ -155,8 +159,46 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
                 if i == 2:
                     ax.set_xlabel("Time")
 
+            fig.text(0.7, 0.03, "Visualization by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
             fig.suptitle(heading_list[j] + " in room " + room_number + parenthetical_list[j])
             export_pdf.savefig()
             plt.close()
+
+    # Sensor Issue Table
+    temp_df = sensor_issues.copy().T.drop("Unnamed: 0", errors='ignore').T.set_index("Room #")
+    temp_df = temp_df.drop("CC Multizone ZN1")
+    for insignificant_room in ['Field House NW', "Field House NE", "Field House SW", "Field House SE", "CC Band & Choral ZN1", "CC Entry Hall & Common", "CC Multizone ZN1", "CC Multizone ZN2", "CC Multizone ZN3", "CC Multizone ZN4", "CC Scene Shop", "CC Seating", "CC Stage", "Outside Air"]:
+        temp_df = temp_df.drop(insignificant_room, errors='ignore')
+        print("got here")
+    temp_df = temp_df.reset_index()
+
+    def sensor_issue_type(row):
+        if row["Temperature Sensor Issue?"] and row["CO2 Sensor Issue?"]:
+            return "Both"
+        elif row["Temperature Sensor Issue?"]:
+            return "Temperature"
+        elif row["CO2 Sensor Issue?"]:
+            return "CO2"
+        return "None"
+
+    temp_df["Sensor Issue Type"] = temp_df.T.apply(sensor_issue_type).T
+    temp_df = temp_df.T.drop("Likely Sensor Issue?", errors='ignore').T
+    temp_df = temp_df.T.drop("Temperature Sensor Issue?", errors='ignore').T
+    temp_df = temp_df.T.drop("CO2 Sensor Issue?", errors='ignore').T
+    page1 = plt.figure()
+    fig, ax = plt.subplots()
+    ax.axis('off')
+    fig.patch.set_visible(False)
+
+    table = ax.table(cellText=temp_df.values, colLabels=temp_df.columns, loc='center')
+    table.auto_set_font_size(False)
+    table.set_fontsize(4)
+    table.scale(1, 1.5)
+    ax.set_title("Rooms w/ Likely Sensor Issues", loc='center')
+    fig.tight_layout()
+    fig.text(0.7, 0.03, "Visualization by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
+
+    export_pdf.savefig()
+    plt.close()
 
 
