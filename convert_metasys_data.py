@@ -26,7 +26,7 @@ def is_co2_sensor(x):
     # if "CO2" not in x:
         # print("hello")
         # print(x)
-    return "CO2" in x  # not sure this works 100% of the time
+    return "CO2" in x or "-Q" in x  # not sure this works 100% of the time
 
 
 df = pd.read_csv("metasys_data.csv", error_bad_lines=False, low_memory=False)  # low_memory=False added b/c of potential data type issues
@@ -36,13 +36,13 @@ rooms = pd.Series(df.T.index)[1:].reset_index(drop=True)
 room_nums = rooms.apply(read_room)  # for some reason this adds an extra row at the start so I'm just getting rid of it
 # print(room_nums[100:110])
 # print("Temp Sensors: ")
-is_co2 = rooms.apply(is_co2_sensor)  # for some reason this adds an extra row at the start so I'm just getting rid of it
+is_co2 = rooms.apply(is_co2_sensor)
 
-# this doesn't actually do anything, it's just a tester
-# rooms_plus_sensors = pd.concat([room_nums, is_co2], axis=1)
-# print("rooms plus sensors")
-# print(rooms_plus_sensors)
-# rooms_plus_sensors.to_csv("new_tester.csv")
+# this goes into the multiindex now
+rooms_plus_sensors = pd.concat([room_nums, is_co2], axis=1)
+print("rooms plus sensors")
+print(rooms_plus_sensors)
+rooms_plus_sensors.to_csv("tester.csv")
 
 # save a transposed copy of df so that we can index by rooms
 # print("End of temp sensors")
@@ -51,11 +51,26 @@ transposed = df.set_index("Unnamed: 0").T
 transposed = transposed.reset_index()
 transposed.insert(1, "Room Number", room_nums, True)
 transposed.insert(2, "CO2 Sensor?", is_co2, True)
-transposed.set_index(["Room Number", "CO2 Sensor?"])
-transposed.to_csv("new_tester.csv")
+# transposed.to_csv("new_tester.csv")
 
 # print("CO2" in "Cafe UV01 ZN08 Q CO2")
 
 # my_fake_df = pd.DataFrame()
 # my_fake_df.insert(0, "Room Number", room_nums, True)
 # my_fake_df.to_csv("new_tester.csv")
+
+transposed = transposed.sort_values("CO2 Sensor?")
+transposed = transposed.sort_values("Room Number")
+transposed = transposed.reset_index().drop("index", axis=1).drop("level_0", axis=1)
+
+# Final stage of modifying data
+pivot = transposed.melt(id_vars=["Room Number", "CO2 Sensor?"], var_name="Timestamp", value_name="Value")
+pivot = pivot.set_index(["Room Number", "Timestamp"])
+pivot = pd.pivot_table(pivot, index=["Room Number", "Timestamp"], values="Value", columns=["CO2 Sensor?"], aggfunc='first')
+pivot.columns = ["Temperature", "CO2"]
+temp_units = ["deg F"]*len(pivot.axes[0])
+co2_units = ["ppm"]*len(pivot.axes[0])
+pivot["Temp Units"] = temp_units
+pivot["CO2 Units"] = co2_units
+pivot.to_csv("new_tester.csv")
+
