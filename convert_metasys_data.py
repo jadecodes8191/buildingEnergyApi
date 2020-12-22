@@ -1,3 +1,5 @@
+import sqlite3
+
 import pandas as pd
 import numpy as np
 
@@ -12,6 +14,7 @@ import numpy as np
 # 3. move the room number factor from a row to a column/reorganize the data into the goal format
 
 # basically, reading column headers to group data
+import sqlalchemy
 
 
 def read_room(x):
@@ -72,5 +75,18 @@ temp_units = ["deg F"]*len(pivot.axes[0])
 co2_units = ["ppm"]*len(pivot.axes[0])
 pivot["Temp Units"] = temp_units
 pivot["CO2 Units"] = co2_units
-pivot.to_csv("new_tester.csv")
+pivot = pivot.reset_index()
+pivot = pivot.rename(columns={"Room Number": "Room #", "Temp Units": "Temp. Units"})
+
+SERVER_PATH = ''  # '/media/ea/Data/Students/jade/buildingEnergyApi/'
+PATH = 'my_file'
+
+engine = sqlalchemy.create_engine('sqlite:///' + SERVER_PATH + PATH)
+conn = sqlite3.connect(SERVER_PATH + PATH)
+new_df = pd.read_sql("TempAndCO2Log", engine)
+new_df.to_csv(SERVER_PATH + "tester.csv")
+print(new_df.index)
+print(pivot.index)
+pivot.to_sql("TempAndCO2Log", conn, if_exists='append')  # actual permanent database
+pivot.to_sql("TempAndCO2LogDaily", conn, if_exists='append')  # copy used for tasks 3 and 4 in this branch, must be cleared out every week
 
