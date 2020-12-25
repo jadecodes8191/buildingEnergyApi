@@ -77,6 +77,7 @@ pivot["Temp Units"] = temp_units
 pivot["CO2 Units"] = co2_units
 pivot = pivot.reset_index()
 pivot = pivot.rename(columns={"Room Number": "Room #", "Temp Units": "Temp. Units"})
+pivot = pivot.set_index("Room #")
 
 SERVER_PATH = ''  # '/media/ea/Data/Students/jade/buildingEnergyApi/'
 PATH = 'my_file'
