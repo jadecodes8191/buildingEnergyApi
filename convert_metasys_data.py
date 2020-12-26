@@ -33,7 +33,9 @@ def is_co2_sensor(x):
 
 
 df = pd.read_csv("metasys_data.csv", error_bad_lines=False, low_memory=False)  # low_memory=False added b/c of potential data type issues
-# print(df.head())
+df = df.drop(df.tail(2).index) # removes informational lines at the bottom of the file
+df.to_csv("tester.csv")
+
 
 rooms = pd.Series(df.T.index)[1:].reset_index(drop=True)
 room_nums = rooms.apply(read_room)  # for some reason this adds an extra row at the start so I'm just getting rid of it
@@ -45,7 +47,7 @@ is_co2 = rooms.apply(is_co2_sensor)
 rooms_plus_sensors = pd.concat([room_nums, is_co2], axis=1)
 print("rooms plus sensors")
 print(rooms_plus_sensors)
-rooms_plus_sensors.to_csv("tester.csv")
+#rooms_plus_sensors.to_csv("tester.csv")
 
 # save a transposed copy of df so that we can index by rooms
 # print("End of temp sensors")
@@ -82,12 +84,19 @@ pivot = pivot.set_index("Room #")
 SERVER_PATH = ''  # '/media/ea/Data/Students/jade/buildingEnergyApi/'
 PATH = 'my_file'
 
+#pivot.to_csv(SERVER_PATH + "tester.csv")
 engine = sqlalchemy.create_engine('sqlite:///' + SERVER_PATH + PATH)
 conn = sqlite3.connect(SERVER_PATH + PATH)
+sql_cmd = "DELETE FROM TempAndCO2Log WHERE Timestamp='Metasys File'"  # this doesn't work at the moment...
+conn.cursor().execute(sql_cmd)
+conn.close()
+
+newconn = sqlite3.connect(SERVER_PATH + PATH)
 new_df = pd.read_sql("TempAndCO2Log", engine)
-new_df.to_csv(SERVER_PATH + "tester.csv")
-print(new_df.index)
-print(pivot.index)
-pivot.to_sql("TempAndCO2Log", conn, if_exists='append')  # actual permanent database
-pivot.to_sql("TempAndCO2LogDaily", conn, if_exists='append')  # copy used for tasks 3 and 4 in this branch, must be cleared out every week
+pivot.to_csv(SERVER_PATH + "tester.csv")
+pivot.to_sql("TempAndCO2Log", newconn, if_exists='append')  # actual permanent database
+pivot.to_sql("TempAndCO2LogDaily", newconn, if_exists='append')  # copy used for tasks 3 and 4 in this branch, must be cleared out every week
+
+test2 = pd.read_sql("TempAndCO2Log", engine)
+test2.to_csv(SERVER_PATH + "tester.csv")
 
