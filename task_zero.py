@@ -19,7 +19,7 @@ conn = sqlite3.connect(SERVER_PATH + PATH)
 
 # create a dictionary for the school calendar ({timestamp date: boolean})
 
-df = pd.read_sql("TempAndCO2Log", engine)
+df = pd.read_sql("MetasysLog", engine)
 df["School Day?"] = None
 df["Timestamp"] = df["Timestamp"].apply(pd.to_datetime)
 

@@ -81,21 +81,25 @@ pivot = pivot.reset_index()
 pivot = pivot.rename(columns={"Room Number": "Room #", "Temp Units": "Temp. Units"})
 pivot = pivot.set_index("Room #")
 
+
+def custom_conv(x):
+    if np.isnan(x):
+        return x
+    return int(x)
+
+
+pivot["Temperature"] = pivot["Temperature"].apply(custom_conv)
+pivot["CO2"] = pivot["Temperature"].apply(custom_conv)
+
 SERVER_PATH = ''  # '/media/ea/Data/Students/jade/buildingEnergyApi/'
 PATH = 'my_file'
 
-#pivot.to_csv(SERVER_PATH + "tester.csv")
 engine = sqlalchemy.create_engine('sqlite:///' + SERVER_PATH + PATH)
 conn = sqlite3.connect(SERVER_PATH + PATH)
-sql_cmd = "DELETE FROM TempAndCO2Log WHERE Timestamp='Metasys File'"  # this doesn't work at the moment...
-conn.cursor().execute(sql_cmd)
-conn.close()
-
-newconn = sqlite3.connect(SERVER_PATH + PATH)
-new_df = pd.read_sql("TempAndCO2Log", engine)
+# new_df = pd.read_sql("MetasysLog", engine)
 pivot.to_csv(SERVER_PATH + "tester.csv")
-pivot.to_sql("TempAndCO2Log", newconn, if_exists='append')  # actual permanent database
-pivot.to_sql("TempAndCO2LogDaily", newconn, if_exists='append')  # copy used for tasks 3 and 4 in this branch, must be cleared out every week
+pivot.to_sql("MetasysLog", conn, if_exists='append')  # actual permanent database
+pivot.to_sql("TempAndCO2LogDaily", conn, if_exists='append')  # copy used for tasks 3 and 4 in this branch, must be cleared out every week
 
 test2 = pd.read_sql("TempAndCO2Log", engine)
 test2.to_csv(SERVER_PATH + "tester.csv")
