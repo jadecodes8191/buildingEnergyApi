@@ -85,8 +85,12 @@ co2_analysis = all_carbon.groupby("Room #").agg({"Mean CO2": np.mean,
 
 
 def convert_to_int(x):
-    if x is not None:
-        return int.from_bytes(x, sys.byteorder)
+    if x is None or np.isnan(x):
+        return x
+    if type(x) == int:
+        return x
+    elif type(x) == float and not np.isnan(x):
+        return int(x)
     return None
 
 

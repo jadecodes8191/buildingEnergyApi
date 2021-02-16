@@ -106,6 +106,14 @@ co2_min = 350
 filtered_log = pd.read_sql("TempAndCO2LogFiltered", engine)
 filtered_log.to_csv("weekly.csv")
 
+
+def fix_bytes(x):
+    if type(x) == bytes:
+        return int.from_bytes(x)
+    else:
+        return x
+
+
 # temporarily (0,1) --> should be (0, 5) or (0, # of days)
 for i in range(0, 5):
     # TODO: for each day, filter (in task 2 style) & create daily problem report. Append this to a database,
@@ -227,6 +235,8 @@ for i in range(0, 5):
             weekly_log['Intervals Too Little CO2'][room] = (intervals_co2.iloc[0])[0]
             weekly_log['Intervals Too Much CO2'][room] = (intervals_co2.iloc[1])[0]
 
+    weekly_log.to_csv("graph_tester.csv")
+
     # go back into time database (copied from original database) and locate timestamps
 
     weekly_log['First Time Too Cold'] = None
@@ -335,6 +345,11 @@ for i in range(0, 5):
     #time_wkly_temp.to_csv("tester.csv")
 
     # Connect to databases
+
+    weekly_log["Intervals Too Cold"] = weekly_log["Intervals Too Cold"].apply(fix_bytes)
+    weekly_log["Intervals Too Warm"] = weekly_log["Intervals Too Warm"].apply(fix_bytes)
+    weekly_log["Intervals Too Much CO2"] = weekly_log["Intervals Too Much CO2"].apply(fix_bytes)
+    weekly_log["Intervals Too Little CO2"] = weekly_log["Intervals Too Little CO2"].apply(fix_bytes)
 
     conn = sqlite3.connect(SERVER_PATH + PATH)
     all_data.to_sql("FilteredT3Database", conn, if_exists='append')
