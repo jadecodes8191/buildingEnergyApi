@@ -123,6 +123,8 @@ daily_data['Time of Lowest Temperature'] = None
 daily_data['Time of Highest CO2'] = None
 daily_data['Time of Lowest CO2'] = None
 
+daily_data.to_csv("tester.csv")
+
 # For each room, goes back into the copies to find the times of the most extreme values
 for room in daily_data.index:
     if not np.isnan(daily_data['Highest Temperature'][room]):

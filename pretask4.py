@@ -140,7 +140,7 @@ for i in range(0, 5):
 
     temp_data = pd.read_sql_table("TemperatureProblemsDatabase", engine)  # might need this into the other sql table directly... probably easiest
     temp_data = temp_data.sort_values("Room #")
-    temp_data.to_csv(SERVER_PATH + 'tester.csv')
+    temp_data.to_csv(SERVER_PATH + 'tester.csv') # No 2020-02 values
     co2_data = pd.read_sql_table("CarbonDioxideProblemsDatabase", engine)
 
     weekly_log = new_data.copy().reset_index().drop("level_0", axis=1)
