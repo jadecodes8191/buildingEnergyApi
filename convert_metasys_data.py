@@ -83,13 +83,13 @@ pivot = pivot.set_index("Room #")
 
 
 def custom_conv(x):
-    if np.isnan(x):
-        return x
-    return int(x)
+    if type(x) != float or not np.isnan(x):
+        return int(round(float(x)))
+    return x
 
 
 pivot["Temperature"] = pivot["Temperature"].apply(custom_conv)
-pivot["CO2"] = pivot["Temperature"].apply(custom_conv)
+pivot["CO2"] = pivot["CO2"].apply(custom_conv) # FOUND IT !!
 
 SERVER_PATH = ''  # '/media/ea/Data/Students/jade/buildingEnergyApi/'
 PATH = 'my_file'

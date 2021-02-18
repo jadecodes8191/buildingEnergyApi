@@ -103,6 +103,8 @@ co2_min = 350
 # conn.cursor().execute("DROP TABLE TemperatureProblemsDatabase")
 # conn.cursor().execute("DROP TABLE CarbonDioxideProblemsDatabase")
 
+
+# Mistake happens before this point
 filtered_log = pd.read_sql("TempAndCO2LogFiltered", engine)
 filtered_log.to_csv("weekly.csv")
 
@@ -134,6 +136,9 @@ for i in range(0, 5):
     # random_testing_copy = temp_data.copy().reset_index()
     # for i in range(temp_data.size):
     #   #print(random_testing_copy.loc[i])
+
+    # Mistake happens before this point
+
     temp_data.to_sql("TemperatureProblemsDatabase", conn, if_exists='replace')  # should replace, because task three will run on one day of data at a time.
 
     # #print("\nToo Much CO2: \n")
@@ -144,10 +149,11 @@ for i in range(0, 5):
 
     # End of Section Modified from Task II
 
-    # TODO: make a task 3 aggregation here.
+    # made a task 3 aggregation here.
 
     temp_data = pd.read_sql_table("TemperatureProblemsDatabase", engine)  # might need this into the other sql table directly... probably easiest
     temp_data = temp_data.sort_values("Room #")
+    # Mistake happens before this point
     temp_data.to_csv(SERVER_PATH + 'tester.csv') # No 2020-02 values
     co2_data = pd.read_sql_table("CarbonDioxideProblemsDatabase", engine)
 
@@ -235,6 +241,7 @@ for i in range(0, 5):
             weekly_log['Intervals Too Little CO2'][room] = (intervals_co2.iloc[0])[0]
             weekly_log['Intervals Too Much CO2'][room] = (intervals_co2.iloc[1])[0]
 
+    # Mistake happens before this point
     weekly_log.to_csv("graph_tester.csv")
 
     # go back into time database (copied from original database) and locate timestamps
