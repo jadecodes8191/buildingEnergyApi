@@ -18,6 +18,6 @@ Main files to take a look at, which display the steps I took towards having a fu
 - Next, switch to the historical-data-report branch to see the version I'm currently working on! Files of interest here are fifteen_min_log.py, task_zero.py, and generate_historical_report.py. 
   - This version is a lot more streamlined towards the final product - it allows the user to generate a report from any week stored within the database immediately, rather than waiting 5 days for the next report.
 
-- Finally, the file I've most recently been updating is convert_metasys_data.py, which basically will allow the software to formulate reports from Metasys data. This is currently a work in progress as I'm experiencing a couple of bugs with SQL.
+- Finally, the file I've most recently been updating is convert_metasys_data.py, which basically will allow the software to formulate reports from Metasys data. This produces a report without errors, whcih is currently being tested on my old set of test data.
 
 
