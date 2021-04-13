@@ -56,6 +56,9 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
         i_df_list = []
         room_num_list = []
         for i in temp_factor:
+            i = str(i)
+            tst = orig_db.set_index("Room #")
+            ixd = tst.index
             i_df = orig_db.set_index("Room #").T[i]
             if j % 2 == 0:
                 i_df_list.append(i_df.T['Temperature'])
@@ -96,6 +99,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
         # Top 5 rooms
 
         for room_number in room_num_list:
+            room_number = str(room_number)
             orig_db = real_orig_db.copy().set_index(["Room #"])
             for insignificant_room in ['Field House NW', "Field House NE", "Field House SW", "Field House SE", "CC Band & Choral ZN1", "CC Entry Hall & Common", "CC Multizone ZN1", "CC Multizone ZN2", "CC Multizone ZN3", "CC Multizone ZN4", "CC Scene Shop", "CC Seating", "CC Stage"]:
                 orig_db = orig_db.drop(insignificant_room, errors='ignore')
@@ -166,7 +170,10 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
 
     # Sensor Issue Table
     temp_df = sensor_issues.copy().T.drop("Unnamed: 0", errors='ignore').T.set_index("Room #")
-    temp_df = temp_df.drop("CC Multizone ZN1")
+    try:
+        temp_df = temp_df.drop("CC Multizone ZN1")
+    except KeyError:
+        print("No cc multizone zn1 ig")
     for insignificant_room in ['Field House NW', "Field House NE", "Field House SW", "Field House SE", "CC Band & Choral ZN1", "CC Entry Hall & Common", "CC Multizone ZN1", "CC Multizone ZN2", "CC Multizone ZN3", "CC Multizone ZN4", "CC Scene Shop", "CC Seating", "CC Stage", "Outside Air"]:
         temp_df = temp_df.drop(insignificant_room, errors='ignore')
         print("got here")
