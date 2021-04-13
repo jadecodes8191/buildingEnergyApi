@@ -143,6 +143,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
                 temp_db = db_list[i]
                 temp_db["Edited Timestamp"] = temp_db["Edited Timestamp"].apply(lambda x : dts.date2num(datetime.datetime.fromtimestamp(x)))
 
+                temp_db = temp_db.sort_values("Edited Timestamp")
                 if co2_or_temp == 1:
                     ax.plot_date(temp_db['Edited Timestamp'], temp_db["CO2"], fmt="-")  # line plot probably worked best but like...
                 else:
