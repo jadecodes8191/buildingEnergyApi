@@ -25,7 +25,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
 
     # Stuff here
 
-    long_text = "Box Plots: Box plots (also known as box-and-whisker plots) are a way of showing data so that you can see both the range and where the middle part of the data lies. The “box” represents the 25th-75th percentile of data, and the orange line in the middle is the median. The “whiskers” extending from the box lead to the minimum and maximum (excluding outliers), and the outliers are represented by dots outside of the structure. For each room in one of the top 5 categories, a box plot is presented showing either its temperature or its carbon dioxide over the time data was collected. \n\nData Collection Methods: Data was logged every 15 minutes by the temperature and CO2 sensors in each classroom, only when school was in session (7am to 3pm Monday through Friday). The visualizations do not include rooms with likely sensor issues (those are in a table at the bottom of the report). \n\nDates: This data was logged for the week of "
+    long_text = "Box Plots: Box plots (also known as box-and-whisker plots) are a way of showing data so that you can see both the range and where the middle part of the data lies. The “box” represents the 25th-75th percentile of data, and the orange line in the middle is the median. The “whiskers” extending from the box lead to the minimum and maximum (excluding outliers), and the outliers are represented by dots outside of the structure. For each room in one of the top 5 categories, a box plot is presented showing either its temperature or its carbon dioxide over the time data was collected. \n\nData Collection Methods: The data shown was exported from temperature and CO2 data from Metasys. It was then filtered to include values from only when school was in session (7am to 3pm Monday through Friday). The visualizations do not include rooms with likely sensor issues (those are in a separate Excel file attached with the report). \n\nDates: This data was logged for the week of "
     first_time = datetime.datetime.strftime(datetime.datetime.strptime(real_orig_db["Timestamp"][0], "%Y-%m-%d %H:%M:%S"), "%B %d, %Y")
     long_text += first_time
     long_text += " to "
@@ -52,6 +52,8 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
 
         temp_factor = temp_df.head(10)
         print(temp_factor)
+        if temp_factor.empty:
+            continue
         temp_factor = temp_factor.T
         i_df_list = []
         room_num_list = []
@@ -69,7 +71,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
         print(i_df_list)
         page1 = plt.figure()
         fig, ax = plt.subplots()
-        ax.set_title(heading_list[j] + " in top 10 rooms w/ issue " + parenthetical_list[j])
+        ax.set_title(heading_list[j] + " in top " + str(len(i_df_list)) + " rooms w/ issue " + parenthetical_list[j])
         #room_num_list.reverse()
         #i_df_list.reverse()
         # Reverse both lists...
@@ -193,20 +195,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
     temp_df = temp_df.T.drop("Likely Sensor Issue?", errors='ignore').T
     temp_df = temp_df.T.drop("Temperature Sensor Issue?", errors='ignore').T
     temp_df = temp_df.T.drop("CO2 Sensor Issue?", errors='ignore').T
-    page1 = plt.figure()
-    fig, ax = plt.subplots()
-    ax.axis('off')
-    fig.patch.set_visible(False)
 
-    table = ax.table(cellText=temp_df.values, colLabels=temp_df.columns, loc='center')
-    table.auto_set_font_size(False)
-    table.set_fontsize(4)
-    table.scale(1, 1.5)
-    ax.set_title("Rooms w/ Likely Sensor Issues", loc='center')
-    fig.tight_layout()
-    fig.text(0.7, 0.03, "Visualization by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
-
-    export_pdf.savefig()
-    plt.close()
+    temp_df.to_excel("SensorIssues.xlsx")
 
 
