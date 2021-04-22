@@ -32,7 +32,7 @@ def is_co2_sensor(x):
     return "CO2" in x or "-Q" in x  # not sure this works 100% of the time
 
 
-df = pd.read_csv("metasys_data.csv", error_bad_lines=False, low_memory=False)  # low_memory=False added b/c of potential data type issues
+df = pd.read_csv("2021-Q1-IAQ-AHS-Temp-CO2.csv", error_bad_lines=False, low_memory=False)  # low_memory=False added b/c of potential data type issues
 df = df.drop(df.tail(2).index) # removes informational lines at the bottom of the file
 df.to_csv("tester.csv")
 

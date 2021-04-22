@@ -8,6 +8,9 @@ import sys
 
 # Copyright 2018 Building Energy Gateway.  All rights reserved.
 
+# Add outside air column in order to compare against the co2 value when checking for sensor issues.....
+
+
 import time
 from building_data_requests import get_bulk
 import numbers
@@ -108,8 +111,6 @@ filtered_log.to_csv("weekly.csv")
 
 # temporarily (0,1) --> should be (0, 5) or (0, # of days)
 for i in range(0, 5):
-    # TODO: for each day, filter (in task 2 style) & create daily problem report. Append this to a database,
-    #  which will serve as a task 3 equivalent
 
     new_data = new_data_copy[new_data_copy["Weekday"] == i]
 
@@ -528,7 +529,8 @@ original_file["Temperature Sensor Issue?"] = None
 # Too little CO2 should probably be combined with this...
 for x in range(0, len(original_file["Days With Problems"])):
     original_file["Likely Sensor Issue?"].iloc[x] = original_file["Intervals Too Cold"].iloc[x] > 160 or original_file['Intervals Too Warm'].iloc[x] > 160 or original_file["Intervals Too Much CO2"].iloc[x] > 160 or original_file["Lowest Temperature"].iloc[x] == original_file["Highest Temperature"].iloc[x] or original_file["Lowest CO2"].iloc[x] == original_file["Highest CO2"].iloc[x] or original_file["Intervals Too Little CO2"].iloc[x] > 0
-    original_file["CO2 Sensor Issue?"].iloc[x] = original_file["Intervals Too Much CO2"].iloc[x] > 160 or original_file["Lowest CO2"].iloc[x] == original_file["Highest CO2"].iloc[x] or original_file["Intervals Too Little CO2"].iloc[x] > 0
+    original_file["CO2 Sensor Issue?"].iloc[x] = original_file["Lowest CO2"].iloc[x] == original_file["Highest CO2"].iloc[x] or original_file["Intervals Too Little CO2"].iloc[x] > 0
+    # original_file["Intervals Too Much CO2"].iloc[x] > 160 or
     original_file["Temperature Sensor Issue?"].iloc[x] = original_file["Intervals Too Cold"].iloc[x] > 160 or original_file['Intervals Too Warm'].iloc[x] > 160 or original_file["Lowest Temperature"].iloc[x] == original_file["Highest Temperature"].iloc[x]
 
 

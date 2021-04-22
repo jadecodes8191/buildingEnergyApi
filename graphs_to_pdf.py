@@ -1,3 +1,7 @@
+# TODO: MAKE ALL OF THIS ONE SCRIPT!
+
+# check out those wednesdays O-O
+
 # Generates graphs based on user input of which room and issue they would like to see.
 # Maybe this program can be run on each item in the "leaderboard" the Facility requested...
 
@@ -17,15 +21,13 @@ sensor_issues = pd.read_excel("low_co2.xlsx")
 real_orig_db = pd.read_csv("basic_weekly.csv")
 print(real_orig_db)
 
-co2_temp_list = [cold, high_co2, warm]
-heading_list = ["Temperature", "CO2", "Temperature"]
-parenthetical_list = ["(Cold)", "(High CO2)", '(Warm)']
+co2_temp_list = [high_co2, cold, warm]
+heading_list = ["CO2", "Temperature", "Temperature"]
+parenthetical_list = ["(High CO2)", "(Cold)", '(Warm)']
 
 with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_pdf:
 
-    # Stuff here
-
-    long_text = "Box Plots: Box plots (also known as box-and-whisker plots) are a way of showing data so that you can see both the range and where the middle part of the data lies. The “box” represents the 25th-75th percentile of data, and the orange line in the middle is the median. The “whiskers” extending from the box lead to the minimum and maximum (excluding outliers), and the outliers are represented by dots outside of the structure. For each room in one of the top 5 categories, a box plot is presented showing either its temperature or its carbon dioxide over the time data was collected. \n\nData Collection Methods: The data shown was exported from temperature and CO2 data from Metasys. It was then filtered to include values from only when school was in session (7am to 3pm Monday through Friday). The visualizations do not include rooms with likely sensor issues (those are in a separate Excel file attached with the report). \n\nDates: This data was logged for the week of "
+    long_text = "Box Plots: Box plots (also known as box-and-whisker plots) are a way of showing data so that you can see both the range and where the middle part of the data lies. The “box” represents the 25th-75th percentile of data, and the orange line in the middle is the median. The “whiskers” extending from the box lead to the minimum and maximum (excluding outliers), and the outliers are represented by dots outside of the structure. For each room in one of the top 5 categories, a box plot is presented showing either its temperature or its carbon dioxide over the time data was collected. \n\nData Collection Methods: The data shown was exported from temperature and CO2 data from Metasys. It was then filtered to include values from only when school was in session (7am to 3pm Monday through Friday). The visualizations do not include rooms with likely sensor issues (those are in a separate Excel file attached with the report).\n\n Thresholds: High CO2 is 1200 ppm, low CO2 (resulting in a sensor issue flag) is the outside air level at the time. High temperature is 75F, low is 65. CO2 sensors are flagged as having issues only if the value is either below the outside air level or always the same. \n\nDates: This data was logged for the week of "
     first_time = datetime.datetime.strftime(datetime.datetime.strptime(real_orig_db["Timestamp"][0], "%Y-%m-%d %H:%M:%S"), "%B %d, %Y")
     long_text += first_time
     long_text += " to "
@@ -196,6 +198,10 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
     temp_df = temp_df.T.drop("Temperature Sensor Issue?", errors='ignore').T
     temp_df = temp_df.T.drop("CO2 Sensor Issue?", errors='ignore').T
 
+    # TODO: possibly re-sort?
+
     temp_df.to_excel("SensorIssues.xlsx")
+    temp_df.to_sql("SensorIssueDB.sqlite", if_exists="append")
 
 
+# TODO: add this to a database
