@@ -33,6 +33,8 @@ start_time = time.time()
 # TASK TWO BEGINS HERE: analysis of problem rooms at each interval
 
 df = pd.read_sql("TempAndCO2LogFiltered", engine)
+# Outside Air is gone by this point...
+#print(df.set_index("Room #").loc["Outside Air AHU2 ZN-T"])
 
 # version with input -- could evolve into an interactive front end. Automation will come
 # This is now deprecated: the week start is chosen at task_zero.
@@ -130,7 +132,20 @@ for i in range(0, 5):
     temp_data.to_sql("TemperatureProblemsDatabase", conn, if_exists='replace')  # should replace, because task three will run on one day of data at a time.
 
     # #print("\nToo Much CO2: \n")
-    carbon_data = new_data[(new_data.CO2 > co2_max) | (new_data.CO2 < co2_min)][['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
+    print(new_data[["CO2", "Room #"]])
+    tmp = new_data[["CO2", "Room #"]].set_index("Room #")
+    #print(tmp.loc["Outside Air AHU2 ZN-T"])
+    new_data["Min_CO2"] = None
+
+    def find_min_co2(row):
+        tmstmp = row["Timestamp"]
+        df1 = new_data.where(new_data["Room #"] == "Outside Air").dropna(how='all')
+        df1 = df1.where(df1["Timestamp"] == tmstmp).dropna(how='all')
+        # print(df1)
+        return df1["CO2"]
+
+    new_data["Min_CO2"] = new_data.apply(find_min_co2, axis=1)
+    carbon_data = new_data[(new_data.CO2 > co2_max) | (new_data.CO2 < new_data.Min_CO2)][['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
     carbon_data['High Carbon?'] = carbon_data.T.apply(check_carbon)
     carbon_data.to_sql("CarbonDioxideProblemsDatabase", conn, if_exists='replace')  # should replace, because task three will run on one day of data at a time.
     # carbon_data.to_csv("weekly.csv")

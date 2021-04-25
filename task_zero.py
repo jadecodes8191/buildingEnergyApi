@@ -19,8 +19,8 @@ conn = sqlite3.connect(SERVER_PATH + PATH)
 
 # create a dictionary for the school calendar ({timestamp date: boolean})
 
-# Mistake happens before this point
 df = pd.read_sql("MetasysLog", engine)
+# Outside Air still exists here
 df["School Day?"] = None
 df["Timestamp"] = df["Timestamp"].apply(pd.to_datetime)
 
@@ -81,10 +81,10 @@ while start_date < end_date:
 print(datetime.date(df["Timestamp"][0].year, df["Timestamp"][0].month, df["Timestamp"][0].day))
 
 df["School Day?"] = df["Timestamp"].apply(lambda x: school_calendar.get(datetime.date(x.year, x.month, x.day)))
-print(df["School Day?"])
 
 # clean up database post-filter
 df_filtered = df.where(df["School Day?"] == True).dropna()
+#print(df_filtered.set_index("Room #").loc["Outside Air AHU2 ZN-T"])
 df_filtered.to_sql("TempAndCO2LogFiltered", conn, if_exists="replace")
 df_filtered.to_csv("weekly.csv")
 

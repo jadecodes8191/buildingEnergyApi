@@ -10,7 +10,12 @@ from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.dates as dts
 import pandas as pd
 import datetime
-import numpy as np
+import sqlite3
+
+SERVER_PATH = ''  # '/media/ea/Data/Students/jade/buildingEnergyApi/'
+PATH = 'my_file'
+
+conn = sqlite3.connect(SERVER_PATH + PATH)
 
 df = pd.read_csv("graph_tester.csv")
 
@@ -64,7 +69,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
             tst = orig_db.set_index("Room #")
             ixd = tst.index
             i_df = orig_db.set_index("Room #").T[i]
-            if j % 2 == 0:
+            if j > 0:
                 i_df_list.append(i_df.T['Temperature'])
             else:
                 i_df_list.append(i_df.T['CO2'])
@@ -80,7 +85,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
         print(room_num_list)
         ax.set_xticklabels(room_num_list)
         ax.set_xlabel("Room #")
-        if j % 2 == 0:
+        if j > 0:
             ax.set_ylabel("Temperature (deg F)")
         else:
             ax.set_ylabel("CO2 (ppm)")
@@ -94,7 +99,9 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
     for j in range(3):
         orig_db = real_orig_db.copy()
 
-        co2_or_temp = (j % 2)
+        co2_or_temp = 0
+        if j == 0:
+            co2_or_temp = 1
         another_df = co2_temp_list[j].set_index("Room #")
         for insignificant_room in ['Field House NW', "Field House NE", "Field House SW", "Field House SE", "CC Band & Choral ZN1", "CC Entry Hall & Common", "CC Multizone ZN1", "CC Multizone ZN2", "CC Multizone ZN3", "CC Multizone ZN4", "CC Scene Shop", "CC Seating", "CC Stage"]:
             another_df = another_df.drop(insignificant_room, errors='ignore')
@@ -201,7 +208,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
     # TODO: possibly re-sort?
 
     temp_df.to_excel("SensorIssues.xlsx")
-    temp_df.to_sql("SensorIssueDB.sqlite", if_exists="append")
+    temp_df.to_sql("SensorIssueDB.sqlite", conn, if_exists="append")
 
 
 # TODO: add this to a database

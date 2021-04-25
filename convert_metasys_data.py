@@ -21,6 +21,8 @@ def read_room(x):
     if "RM" in x:
         rm = x.split(' ')[0]
         return rm[2:]
+    if x == "Outside Air CO2" or x == "Outside Air RTU1":
+        return "Outside Air"
     else:
         return x
 
@@ -89,7 +91,7 @@ def custom_conv(x):
 
 
 pivot["Temperature"] = pivot["Temperature"].apply(custom_conv)
-pivot["CO2"] = pivot["CO2"].apply(custom_conv) # FOUND IT !!
+pivot["CO2"] = pivot["CO2"].apply(custom_conv)  # FOUND IT !!
 
 SERVER_PATH = ''  # '/media/ea/Data/Students/jade/buildingEnergyApi/'
 PATH = 'my_file'
