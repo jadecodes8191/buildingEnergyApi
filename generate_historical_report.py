@@ -101,8 +101,8 @@ new_data_copy = new_data.copy()
 
 new_data_copy["Weekday"] = new_data_copy["Timestamp"].apply(lambda x: x.weekday())
 new_data_copy.to_csv("basic_weekly.csv")
-co2_min = 350
-# TODO: Fix this placeholder value
+#co2_min = 350
+#fixed this placeholder value
 
 # These drops AREN'T necessary! We are replacing the tables at the start of the loop anyways
 # conn.cursor().execute("DROP TABLE TemperatureProblemsDatabase")
@@ -142,9 +142,10 @@ for i in range(0, 5):
         df1 = new_data.where(new_data["Room #"] == "Outside Air").dropna(how='all')
         df1 = df1.where(df1["Timestamp"] == tmstmp).dropna(how='all')
         # print(df1)
-        return df1["CO2"]
+        return df1["CO2"].iloc[0]
 
     new_data["Min_CO2"] = new_data.apply(find_min_co2, axis=1)
+    print(new_data["Min_CO2"])
     carbon_data = new_data[(new_data.CO2 > co2_max) | (new_data.CO2 < new_data.Min_CO2)][['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
     carbon_data['High Carbon?'] = carbon_data.T.apply(check_carbon)
     carbon_data.to_sql("CarbonDioxideProblemsDatabase", conn, if_exists='replace')  # should replace, because task three will run on one day of data at a time.
