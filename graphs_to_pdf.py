@@ -44,7 +44,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
     page1.clf()
     page1.text(0.7, 0.03, "Visualizations by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
     page1.text(0.15, 0.8, "Welcome to the weekly report!", size=20)
-    page1.text(0.15, 0.4, long_text, size=8, wrap=True)
+    page1.text(0.15, 0.2, long_text, size=8, wrap=True)
 
     export_pdf.savefig()
 
