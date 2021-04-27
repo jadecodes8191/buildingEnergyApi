@@ -2,7 +2,9 @@
 
 This is the home of the code for my work with Energize Andover! (forked from the original Energize repo)
 
-Main files to take a look at, which display the steps I took towards having a full reporting engine ready to go:
+The file containing all of the code for the current version is full_metasys_script.py. This application can process any week's worth of CO2 and temperature data and create a report of rooms with air flow problems or sensor issues. The data is first pulled from Metasys and preprocessed into a raw spreadsheet format by Energize Andover's API. My code synthesizes the week's worth of data for each room, determines which rooms are problematic, and produces comprehensive visualizations and spreadsheets depicting those rooms in order to achieve a clearer understanding of climate issues in the school building.
+
+Here are some other files to take a look at, which display the steps I took towards having a full reporting engine ready to go:
 
 - problemareascron.py, cold_rooms.py, warm_rooms.py, carbon_rooms.py 
   - This system uses schoolwide sensors to get temperature and CO2 data, which it then writes to a temporary CSV file (ahs_air_data).
