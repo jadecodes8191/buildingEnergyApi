@@ -42,8 +42,10 @@ def is_co2_sensor(x):
     return "CO2" in x or "-Q" in x  # not sure this works 100% of the time
 
 
-df = pd.read_csv("2021-Q1-IAQ-AHS-Temp-CO2.csv", error_bad_lines=False, low_memory=False)  # low_memory=False added b/c of potential data type issues
-df = df.drop(df.tail(2).index) # removes informational lines at the bottom of the file
+filename = input("Enter file name")
+
+df = pd.read_csv(filename, error_bad_lines=False, low_memory=False)  # low_memory=False added b/c of potential data type issues
+df = df.drop(df.tail(2).index)  # removes informational lines at the bottom of the file
 df.to_csv("tester.csv")
 
 
@@ -55,8 +57,8 @@ is_co2 = rooms.apply(is_co2_sensor)
 
 # this goes into the multiindex now
 rooms_plus_sensors = pd.concat([room_nums, is_co2], axis=1)
-print("rooms plus sensors")
-print(rooms_plus_sensors)
+#print("rooms plus sensors")
+#print(rooms_plus_sensors)
 #rooms_plus_sensors.to_csv("tester.csv")
 
 # save a transposed copy of df so that we can index by rooms
@@ -136,7 +138,7 @@ df = pivot
 df["School Day?"] = None
 df["Timestamp"] = df["Timestamp"].apply(pd.to_datetime)
 
-print(df["Timestamp"][0].date)
+#print(df["Timestamp"][0].date)
 
 school_calendar = {}
 
@@ -161,10 +163,10 @@ start_date = datetime.date(start_date.year, start_date.month, start_date.day)
 # print(week_start)
 
 # start_date = datetime.date(df["Timestamp"][0].year, df["Timestamp"][0].month, df["Timestamp"][0].day) - datetime.timedelta(days=1)
-print("START DATE: ")
-print(start_date)
+#print("START DATE: ")
+#print(start_date)
 last_idx = df["Timestamp"].size - 1
-print(df["Timestamp"][last_idx])
+#print(df["Timestamp"][last_idx])
 # end_date = datetime.date(df["Timestamp"][last_idx].year, df["Timestamp"][last_idx].month, df["Timestamp"][last_idx].day)
 end_date = start_date + datetime.timedelta(days=7)
 # df["School Day?"] = df["Timestamp"].apply(lambda x: x.weekday() < 5)
@@ -180,17 +182,17 @@ end_date = start_date + datetime.timedelta(days=7)
 # that the day before the last day logged will have data, so you could miss out on the last day if you
 # just used <
 while start_date < end_date:
-    print("START DATE: ")
-    print(start_date)
-    print("END DATE: ")
-    print(end_date)
+    #print("START DATE: ")
+    #print(start_date)
+    #print("END DATE: ")
+    #print(end_date)
     school_calendar[start_date] = (start_date.weekday() < 5)
     start_date += datetime.timedelta(days=1)
 # This can and should be modified to include weekdays that are
 # days off from school -- for now this is just a placeholder
 
 # filter each day in the database with condition ~ map.get(this.day) == true
-print(datetime.date(df["Timestamp"][0].year, df["Timestamp"][0].month, df["Timestamp"][0].day))
+#print(datetime.date(df["Timestamp"][0].year, df["Timestamp"][0].month, df["Timestamp"][0].day))
 
 df["School Day?"] = df["Timestamp"].apply(lambda x: school_calendar.get(datetime.date(x.year, x.month, x.day)))
 
@@ -259,11 +261,11 @@ df_test_copy = df_test_copy.set_index(["Timestamp", "Room #"])
 
 # Gets interval data about a certain datetime, and the optional room parameter is passed in
 # Not needed yet...
-def get_interval_data(date_time, room=None):
-    if room is None:
-        print(df_test_copy.loc[str(date_time)])  # this works
-    else:
-        print(df_test_copy.loc[(str(date_time), str(room))])  # this also works -- the room data type is a STRING
+#def get_interval_data(date_time, room=None):
+    #if room is None:
+        #print(df_test_copy.loc[str(date_time)])  # this works
+    #else:
+        #print(df_test_copy.loc[(str(date_time), str(room))])  # this also works -- the room data type is a STRING
 
 
 # get_interval_data(datetime(2020, 2, 14, 7, 0, 3))  # test function call 3/11 -- works perfectly!
@@ -320,7 +322,7 @@ for i in range(0, 5):
     temp_data.to_sql("TemperatureProblemsDatabase", conn, if_exists='replace')  # should replace, because task three will run on one day of data at a time.
 
     # #print("\nToo Much CO2: \n")
-    print(new_data[["CO2", "Room #"]])
+    #print(new_data[["CO2", "Room #"]])
     tmp = new_data[["CO2", "Room #"]].set_index("Room #")
     #print(tmp.loc["Outside Air AHU2 ZN-T"])
     new_data["Min_CO2"] = None
@@ -333,7 +335,7 @@ for i in range(0, 5):
         return df1["CO2"].iloc[0]
 
     new_data["Min_CO2"] = new_data.apply(find_min_co2, axis=1)
-    print(new_data["Min_CO2"])
+    #print(new_data["Min_CO2"])
     carbon_data = new_data[(new_data.CO2 > co2_max) | (new_data.CO2 < new_data.Min_CO2)][['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
     carbon_data['High Carbon?'] = carbon_data.T.apply(check_carbon)
     carbon_data.to_sql("CarbonDioxideProblemsDatabase", conn, if_exists='replace')  # should replace, because task three will run on one day of data at a time.
@@ -725,6 +727,9 @@ SERVER_PATH = ''  # '/media/ea/Data/Students/jade/buildingEnergyApi/'
 PATH = 'MetasysWeeklyDatabase'
 
 conn = sqlite3.connect(SERVER_PATH + PATH)
+# To add into database for easier searching
+start_date = week_start_month + "/" + week_start_day + "/" + week_start_year
+
 
 # Task 4.5 -- creating the 4 more consolidated sheets
 # UPDATE: in the new branch, this task will also separate rooms with sensor issues into their own spreadsheets
@@ -757,6 +762,7 @@ for x in range(0, len(cold_values['Median Temperature'])):
             temp_time = cold_values[category].iloc[x]
         cold_values[category].iloc[x] = datetime.datetime.strftime(temp_time, "%a %d %b %Y %H:%M")
 #cold_values.to_csv("tester.csv")
+cold_values["Week"] = start_date
 cold_values.to_excel("cold.xlsx")
 cold_values.to_sql("MetasysColdValues", conn, if_exists="append")
 
@@ -774,6 +780,7 @@ for x in range(0, len(warm_values['Median Temperature'])):
         elif type(warm_values[category].iloc[x] == pd.Timestamp):
             temp_time = warm_values[category].iloc[x]
         warm_values[category].iloc[x] = datetime.datetime.strftime(temp_time, "%a %d %b %Y %H:%M")
+warm_values["Week"] = start_date
 warm_values.to_csv("weekly.csv")
 warm_values.to_excel("warm.xlsx")
 warm_values.to_sql("MetasysWarmValues", conn, if_exists="append")
@@ -793,6 +800,7 @@ for x in range(0, len(high_co2['Median CO2'])):
             temp_time = high_co2[category].iloc[x]
         high_co2[category].iloc[x] = datetime.datetime.strftime(temp_time, "%a %d %b %Y %H:%M")
 #high_co2.to_csv("basic_weekly.csv")
+high_co2["Week"] = start_date
 high_co2.to_excel("high_co2.xlsx")
 high_co2.to_sql("MetasysHighCO2Values", conn, if_exists="append")
 
@@ -816,20 +824,9 @@ low_co2 = low_co2.sort_values(by="Intervals Too Little CO2", ascending=False)
             #low_co2[category].iloc[x] = None
 low_co2.to_csv("ahs_carbon_data.csv")
 low_co2.to_excel("low_co2.xlsx")
+
 # Generates graphs based on user input of which room and issue they would like to see.
 # Maybe this program can be run on each item in the "leaderboard" the Facility requested...
-
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_pdf import PdfPages
-import matplotlib.dates as dts
-import pandas as pd
-import datetime
-import sqlite3
-
-SERVER_PATH = ''  # '/media/ea/Data/Students/jade/buildingEnergyApi/'
-PATH = 'my_file'
-
-conn = sqlite3.connect(SERVER_PATH + PATH)
 
 df = pd.read_csv("graph_tester.csv")
 
@@ -838,7 +835,7 @@ warm = pd.read_excel("warm.xlsx")
 high_co2 = pd.read_excel("high_co2.xlsx")
 sensor_issues = pd.read_excel("low_co2.xlsx")
 real_orig_db = pd.read_csv("basic_weekly.csv")
-print(real_orig_db)
+#print(real_orig_db)
 
 co2_temp_list = [high_co2, cold, warm]
 heading_list = ["CO2", "Temperature", "Temperature"]
@@ -854,11 +851,11 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
     last_time = datetime.datetime.strftime(datetime.datetime.strptime(real_orig_db["Timestamp"][0], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(days=5), "%B %d, %Y")
     long_text += last_time
     long_text += "."
-    print(long_text)
+    #print(long_text)
     page1 = plt.figure()
     page1.clf()
     page1.text(0.7, 0.03, "Visualizations by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
-    page1.text(0.3, 0.03, "Data logged for week of " + first_time_copy + " to " + last_time, size=4, wrap=True)
+    page1.text(0.1, 0.03, "Data logged for week of " + first_time_copy + " to " + last_time, size=4, wrap=True)
     page1.text(0.15, 0.8, "Welcome to the weekly report!", size=20)
     page1.text(0.15, 0.2, long_text, size=8, wrap=True)
 
@@ -874,7 +871,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
             temp_df = temp_df.drop(insignificant_room, errors='ignore')
 
         temp_factor = temp_df.head(10)
-        print(temp_factor)
+        #print(temp_factor)
         if temp_factor.empty:
             continue
         temp_factor = temp_factor.T
@@ -891,14 +888,14 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
                 i_df_list.append(i_df.T['CO2'])
             room_num_list.append(i)
 
-        print(i_df_list)
+        #print(i_df_list)
         page1 = plt.figure()
         fig, ax = plt.subplots()
         ax.set_title(heading_list[j] + " in top " + str(len(i_df_list)) + " rooms w/ issue " + parenthetical_list[j])
         #room_num_list.reverse()
         #i_df_list.reverse()
         # Reverse both lists...
-        print(room_num_list)
+        #print(room_num_list)
         ax.set_xticklabels(room_num_list)
         ax.set_xlabel("Room #")
         if j > 0:
@@ -907,7 +904,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
             ax.set_ylabel("CO2 (ppm)")
 
         fig.text(0.7, 0.03, "Visualization by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
-        fig.text(0.3, 0.03, "Data logged for week of " + first_time_copy + " to " + last_time, size=4, wrap=True)
+        fig.text(0.1, 0.03, "Data logged for week of " + first_time_copy + " to " + last_time, size=4, wrap=True)
         plt.boxplot(i_df_list, vert=True)
         plt.margins(0.2)
         fig.tight_layout()
@@ -934,17 +931,17 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
             orig_db = orig_db.reset_index()
             orig_db = orig_db[orig_db["Room #"] == room_number]
             orig_db = orig_db[orig_db["Weekday"] < 5] # TODO: figure this out so incase the user inputs a day that's not Monday, we're not counting weekends!
-            print(orig_db)
-            print(orig_db["Timestamp"])
+            #print(orig_db)
+            #print(orig_db["Timestamp"])
             orig_db = orig_db.reset_index()
             first_time = orig_db["Timestamp"][0]
             orig_db["Edited Timestamp"] = orig_db["Timestamp"].apply(lambda x: int((datetime.datetime.strptime(x, "%Y-%m-%d %H:%M:%S")).timestamp()))
             orig_db["Day"] = orig_db["Edited Timestamp"].apply(lambda x: (datetime.datetime.fromtimestamp(x)).date())
             orig_db["Time"] = orig_db["Edited Timestamp"].apply(lambda x: (datetime.datetime.fromtimestamp(x)).time())
             orig_db = orig_db[orig_db["Time"] < datetime.datetime.strptime("15:15", "%H:%M").time()]
-            print(first_time)
+           # print(first_time)
 
-            print("This is running")
+            #print("This is running")
             page1 = plt.figure()
 
             db_list = []
@@ -956,9 +953,9 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
                 new_list.append(datetime.datetime.strftime(temp, "%Y-%m-%d"))
                 int_list.append(int(temp.timestamp()))
 
-            print("DB LIST")
-            print(db_list[1])
-            print(new_list)
+            #print("DB LIST")
+            #print(db_list[1])
+            #print(new_list)
             timestamp_list = ["7:00", "8:00", "9:00", "10:00", "11:00", "12:00", "1:00", "2:00", "3:00"]
             for i in range(len(timestamp_list)):
                 timestamp_list[i] = datetime.datetime.strptime(timestamp_list[i], "%H:%M").time()
@@ -976,12 +973,12 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
                     ax.plot_date(temp_db['Edited Timestamp'], temp_db["CO2"], fmt="-")  # line plot probably worked best but like...
                 else:
                     ax.plot_date(temp_db["Edited Timestamp"], temp_db["Temperature"], fmt="-")
-                print("X Ticks")
+                #print("X Ticks")
                 new_x_tick_list = []
                 for x in ax.get_xticks():
-                    print(x)
+                    #print(x)
                     new_x_tick_list.append(datetime.datetime.strftime(datetime.datetime.fromtimestamp(x), "%H:%M"))
-                print(new_x_tick_list)
+                #print(new_x_tick_list)
                 ax.set_xticklabels(["7:00", "", "", "", "11:00", "", "", "", "3:00"], fontsize=5)
                 ax.set_title(title_list[i])
                 if i == 0:
@@ -993,20 +990,17 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
                     ax.set_xlabel("Time")
 
             fig.text(0.7, 0.03, "Visualization by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
-            fig.text(0.3, 0.03, "Data logged for week of " + first_time_copy + " to " + last_time, size=4, wrap=True)
+            fig.text(0.1, 0.03, "Data logged for week of " + first_time_copy + " to " + last_time, size=4, wrap=True)
             fig.suptitle(heading_list[j] + " in room " + room_number + parenthetical_list[j])
             export_pdf.savefig()
             plt.close()
 
     # Sensor Issue Table
     temp_df = sensor_issues.copy().T.drop("Unnamed: 0", errors='ignore').T.set_index("Room #")
-    try:
-        temp_df = temp_df.drop("CC Multizone ZN1")
-    except KeyError:
-        print("No cc multizone zn1 ig")
+    temp_df = temp_df.drop("CC Multizone ZN1",errors='ignore')
     for insignificant_room in ['Field House NW', "Field House NE", "Field House SW", "Field House SE", "CC Band & Choral ZN1", "CC Entry Hall & Common", "CC Multizone ZN1", "CC Multizone ZN2", "CC Multizone ZN3", "CC Multizone ZN4", "CC Scene Shop", "CC Seating", "CC Stage", "Outside Air"]:
         temp_df = temp_df.drop(insignificant_room, errors='ignore')
-        print("got here")
+        #print("got here")
     temp_df = temp_df.reset_index()
 
     def sensor_issue_type(row):
@@ -1025,6 +1019,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
 
     # TODO: possibly re-sort?
 
+    temp_df["Week"] = start_date
     temp_df.to_excel("SensorIssues.xlsx")
     temp_df.to_sql("MetasysSensorIssues", conn, if_exists="append")
 
@@ -1037,7 +1032,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
         orig_db = real_orig_db.copy()
         temp_factor = temp_df.head(10)
         temp_df = temp_df.iloc[len(temp_factor):]
-        print(temp_factor)
+        #print(temp_factor)
         if temp_factor.empty:
             continue
         temp_factor = temp_factor.T
@@ -1058,14 +1053,17 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
         #room_num_list.reverse()
         #i_df_list.reverse()
         # Reverse both lists...
-        print(room_num_list)
+        #print(room_num_list)
         ax.set_xticklabels(room_num_list)
         ax.set_xlabel("Room #")
         ax.set_ylabel("CO2 (ppm)")
 
         fig.text(0.7, 0.03, "Visualization by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
-        fig.text(0.3, 0.03, "Data logged for week of " + first_time_copy + " to " + last_time, size=4, wrap=True)
+        fig.text(0.1, 0.03, "Data logged for week of " + first_time_copy + " to " + last_time, size=4, wrap=True)
         plt.boxplot(i_df_list, vert=True)
         plt.margins(0.2)
         fig.tight_layout()
         export_pdf.savefig()
+
+elapsed_time = round((time.time() - start_time) * 1000)/1000
+print('\nElapsed time: {0} seconds'.format(elapsed_time))
