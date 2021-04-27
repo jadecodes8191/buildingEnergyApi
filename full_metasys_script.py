@@ -113,8 +113,8 @@ pivot.to_csv(SERVER_PATH + "tester.csv")
 pivot.to_sql("MetasysLog", conn, if_exists='append')  # actual permanent database
 pivot.to_sql("TempAndCO2LogDaily", conn, if_exists='append')  # copy used for tasks 3 and 4 in this branch, must be cleared out every week
 
-test2 = pd.read_sql("TempAndCO2Log", engine)
-test2.to_csv(SERVER_PATH + "tester.csv")
+#test2 = pd.read_sql("TempAndCO2Log", engine)
+#test2.to_csv(SERVER_PATH + "tester.csv")
 
 # GOAL: Filter the database to match a "calendar" of days when school is in session
 # NOTE: This may not stay task_zero -- it may become integrated into the historical data so as to
