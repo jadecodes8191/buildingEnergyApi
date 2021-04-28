@@ -133,7 +133,7 @@ conn = sqlite3.connect(SERVER_PATH + PATH)
 
 # create a dictionary for the school calendar ({timestamp date: boolean})
 
-df = pd.read_sql("MetasysLog", engine)
+df = pivot
 # Outside Air still exists here
 df["School Day?"] = None
 df["Timestamp"] = df["Timestamp"].apply(pd.to_datetime)
@@ -350,7 +350,7 @@ for i in range(0, 5):
     temp_data.to_csv(SERVER_PATH + 'tester.csv')
     co2_data = pd.read_sql_table("CarbonDioxideProblemsDatabase", engine)
 
-    weekly_log = new_data.copy().reset_index().drop("level_0", axis=1)
+    weekly_log = new_data.copy().reset_index().drop("level_0", axis=1, errors='ignore')
 
     # Convert times to integers so that they compare accurately
 
@@ -485,7 +485,7 @@ for i in range(0, 5):
             return z
         elif type(z) == pd.Timestamp:
             #print(type(datetime.strftime(z.to_pydatetime(), '%Y-%m-%d %H:%M:%S')))
-            return datetime.strftime(z.to_pydatetime(), '%Y-%m-%d %H:%M:%S')
+            return datetime.datetime.strftime(z.to_pydatetime(), '%Y-%m-%d %H:%M:%S')
 
 
     # finds times of high/low temps on a daily basis... this isn't actually used in the final report but it might be good information to have
@@ -567,7 +567,7 @@ all_temps = pd.read_sql_table("DailyTempDatabase", engine)
 all_carbon = pd.read_sql_table("DailyCarbonDatabase", engine)
 days_with_problems = pd.read_sql_table("FilteredT3Database", engine)
 days_with_problems = days_with_problems.drop("index", axis=1)
-days_with_problems['Day'] = days_with_problems['Timestamp'].apply(lambda z: datetime.strftime(z, "%Y-%m-%d"))#kept as a string for now just to avoid automatic time assignment
+days_with_problems['Day'] = days_with_problems['Timestamp'].apply(lambda z: datetime.datetime.strftime(z, "%Y-%m-%d"))#kept as a string for now just to avoid automatic time assignment
 days_with_problems = days_with_problems.set_index(["Room #", "Day"])
 days_with_problems["Days With Problems"] = None
 days_with_problems = days_with_problems.groupby(level=[0, 1]).agg({"Days With Problems": np.size})
@@ -582,7 +582,7 @@ def convert_back(z):
     if z == "N/A":
         return np.NaN
     elif z is not None:
-        return datetime.strptime(z, "%Y-%m-%d %H:%M:%S").timestamp()
+        return datetime.datetime.strptime(z, "%Y-%m-%d %H:%M:%S").timestamp()
     else:
         return None
 
@@ -695,7 +695,7 @@ for room in daily_data.index:
 
 def make_time_readable(x):
     if (x is not None) and (not np.isnan(x)):
-        return datetime.fromtimestamp(x)
+        return datetime.datetime.fromtimestamp(x)
     return None
 
 
@@ -723,7 +723,6 @@ cursor.execute(drop2)
 cursor.execute(drop3)
 cursor.execute(drop4)
 
-<<<<<<< HEAD
 SERVER_PATH = ''  # '/media/ea/Data/Students/jade/buildingEnergyApi/'
 PATH = 'MetasysWeeklyDatabase'
 
@@ -731,8 +730,6 @@ conn = sqlite3.connect(SERVER_PATH + PATH)
 # To add into database for easier searching
 start_date = week_start_month + "/" + week_start_day + "/" + week_start_year
 
-=======
->>>>>>> parent of b6df140... finalizing full metasys script
 
 # Task 4.5 -- creating the 4 more consolidated sheets
 # UPDATE: in the new branch, this task will also separate rooms with sensor issues into their own spreadsheets
@@ -760,13 +757,14 @@ for x in range(0, len(cold_values['Median Temperature'])):
     cold_values['Mean Temperature'].iloc[x] = int(cold_values['Mean Temperature'].iloc[x])
     for category in ['Time of Highest Temperature', 'Time of Lowest Temperature', "First Time Too Cold", "Last Time Too Cold"]:
         if type(cold_values[category].iloc[x]) == str:
-            temp_time = datetime.strptime(cold_values[category].iloc[x], "%Y-%m-%d %H:%M:%S")
+            temp_time = datetime.datetime.strptime(cold_values[category].iloc[x], "%Y-%m-%d %H:%M:%S")
         elif type(cold_values[category].iloc[x] == pd.Timestamp):
             temp_time = cold_values[category].iloc[x]
-        cold_values[category].iloc[x] = datetime.strftime(temp_time, "%a %d %b %Y %H:%M")
+        cold_values[category].iloc[x] = datetime.datetime.strftime(temp_time, "%a %d %b %Y %H:%M")
 #cold_values.to_csv("tester.csv")
 cold_values["Week"] = start_date
 cold_values.to_excel("cold.xlsx")
+cold_values.to_sql("MetasysColdValues", conn, if_exists="append")
 
 # Warm Values
 warm_values = original_file[["Room #", "Days With Problems", "Intervals Too Warm", "Lowest Temperature", "Highest Temperature", "Mean Temperature", "Median Temperature", "First Time Too Warm", "Last Time Too Warm", "Time of Highest Temperature", "Time of Lowest Temperature", "Likely Sensor Issue?", "Temperature Sensor Issue?"]]
@@ -778,17 +776,14 @@ for x in range(0, len(warm_values['Median Temperature'])):
     warm_values['Mean Temperature'].iloc[x] = int(warm_values['Mean Temperature'].iloc[x])
     for category in ['Time of Highest Temperature', 'Time of Lowest Temperature', "First Time Too Warm", "Last Time Too Warm"]:
         if type(warm_values[category].iloc[x]) == str:
-            temp_time = datetime.strptime(warm_values[category].iloc[x], "%Y-%m-%d %H:%M:%S")
+            temp_time = datetime.datetime.strptime(warm_values[category].iloc[x], "%Y-%m-%d %H:%M:%S")
         elif type(warm_values[category].iloc[x] == pd.Timestamp):
             temp_time = warm_values[category].iloc[x]
-<<<<<<< HEAD
         warm_values[category].iloc[x] = datetime.datetime.strftime(temp_time, "%a %d %b %Y %H:%M")
 warm_values["Week"] = start_date
-=======
-        warm_values[category].iloc[x] = datetime.strftime(temp_time, "%a %d %b %Y %H:%M")
->>>>>>> parent of b6df140... finalizing full metasys script
 warm_values.to_csv("weekly.csv")
 warm_values.to_excel("warm.xlsx")
+warm_values.to_sql("MetasysWarmValues", conn, if_exists="append")
 
 # High CO2 Values
 high_co2 = original_file[["Room #", "Days With Problems", "Intervals Too Much CO2", "Lowest CO2", "Highest CO2", "Mean CO2", "Median CO2", "Time of Highest CO2", "Time of Lowest CO2", "Likely Sensor Issue?", "CO2 Sensor Issue?"]]
@@ -800,13 +795,14 @@ for x in range(0, len(high_co2['Median CO2'])):
     high_co2['Mean CO2'].iloc[x] = int(high_co2['Mean CO2'].iloc[x])
     for category in ['Time of Highest CO2', 'Time of Lowest CO2']:
         if type(high_co2[category].iloc[x]) == str:
-            temp_time = datetime.strptime(high_co2[category].iloc[x], "%Y-%m-%d %H:%M:%S")
+            temp_time = datetime.datetime.strptime(high_co2[category].iloc[x], "%Y-%m-%d %H:%M:%S")
         elif type(high_co2[category].iloc[x] == pd.Timestamp):
             temp_time = high_co2[category].iloc[x]
-        high_co2[category].iloc[x] = datetime.strftime(temp_time, "%a %d %b %Y %H:%M")
+        high_co2[category].iloc[x] = datetime.datetime.strftime(temp_time, "%a %d %b %Y %H:%M")
 #high_co2.to_csv("basic_weekly.csv")
 high_co2["Week"] = start_date
 high_co2.to_excel("high_co2.xlsx")
+high_co2.to_sql("MetasysHighCO2Values", conn, if_exists="append")
 
 # SENSOR ISSUE (incl. low co2)
 low_co2 = original_file[["Room #", "Intervals Too Warm", "Intervals Too Cold", "Intervals Too Much CO2", "Intervals Too Little CO2", "Lowest CO2", "Highest CO2", "Lowest Temperature", "Highest Temperature", "Likely Sensor Issue?", "CO2 Sensor Issue?", "Temperature Sensor Issue?"]]
@@ -829,24 +825,9 @@ low_co2 = low_co2.sort_values(by="Intervals Too Little CO2", ascending=False)
 low_co2.to_csv("ahs_carbon_data.csv")
 low_co2.to_excel("low_co2.xlsx")
 
-<<<<<<< HEAD
 # Generates graphs based on user input of which room and issue they would like to see.
 # Maybe this program can be run on each item in the "leaderboard" the Facility requested...
 
-=======
-# TODO: MAKE ALL OF THIS ONE SCRIPT!
-
-# check out those wednesdays O-O
-
-# Generates graphs based on user input of which room and issue they would like to see.
-# Maybe this program can be run on each item in the "leaderboard" the Facility requested...
-
-SERVER_PATH = ''  # '/media/ea/Data/Students/jade/buildingEnergyApi/'
-PATH = 'my_file'
-
-conn = sqlite3.connect(SERVER_PATH + PATH)
-
->>>>>>> parent of b6df140... finalizing full metasys script
 df = pd.read_csv("graph_tester.csv")
 
 cold = pd.read_excel("cold.xlsx")
@@ -864,6 +845,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
 
     long_text = "Box Plots: Box plots (also known as box-and-whisker plots) are a way of showing data so that you can see both the range and where the middle part of the data lies. The “box” represents the 25th-75th percentile of data, and the orange line in the middle is the median. The “whiskers” extending from the box lead to the minimum and maximum (excluding outliers), and the outliers are represented by dots outside of the structure. For each room in one of the top 5 categories, a box plot is presented showing either its temperature or its carbon dioxide over the time data was collected. \n\nData Collection Methods: The data shown was exported from temperature and CO2 data from Metasys. It was then filtered to include values from only when school was in session (7am to 3pm Monday through Friday). The visualizations do not include rooms with likely sensor issues (those are in a separate Excel file attached with the report).\n\n Thresholds: High CO2 is 1200 ppm, low CO2 (resulting in a sensor issue flag) is the outside air level at the time. High temperature is 75F, low is 65. CO2 sensors are flagged as having issues only if the value is either below the outside air level or always the same. \n\nDates: This data was logged for the week of "
     first_time = datetime.datetime.strftime(datetime.datetime.strptime(real_orig_db["Timestamp"][0], "%Y-%m-%d %H:%M:%S"), "%B %d, %Y")
+    first_time_copy = first_time
     long_text += first_time
     long_text += " to "
     last_time = datetime.datetime.strftime(datetime.datetime.strptime(real_orig_db["Timestamp"][0], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(days=5), "%B %d, %Y")
@@ -873,10 +855,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
     page1 = plt.figure()
     page1.clf()
     page1.text(0.7, 0.03, "Visualizations by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
-<<<<<<< HEAD
     page1.text(0.1, 0.03, "Data logged for week of " + first_time_copy + " to " + last_time, size=4, wrap=True)
-=======
->>>>>>> parent of b6df140... finalizing full metasys script
     page1.text(0.15, 0.8, "Welcome to the weekly report!", size=20)
     page1.text(0.15, 0.2, long_text, size=8, wrap=True)
 
@@ -925,10 +904,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
             ax.set_ylabel("CO2 (ppm)")
 
         fig.text(0.7, 0.03, "Visualization by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
-<<<<<<< HEAD
         fig.text(0.1, 0.03, "Data logged for week of " + first_time_copy + " to " + last_time, size=4, wrap=True)
-=======
->>>>>>> parent of b6df140... finalizing full metasys script
         plt.boxplot(i_df_list, vert=True)
         plt.margins(0.2)
         fig.tight_layout()
@@ -1014,10 +990,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
                     ax.set_xlabel("Time")
 
             fig.text(0.7, 0.03, "Visualization by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
-<<<<<<< HEAD
             fig.text(0.1, 0.03, "Data logged for week of " + first_time_copy + " to " + last_time, size=4, wrap=True)
-=======
->>>>>>> parent of b6df140... finalizing full metasys script
             fig.suptitle(heading_list[j] + " in room " + room_number + parenthetical_list[j])
             export_pdf.savefig()
             plt.close()
@@ -1048,10 +1021,13 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
 
     temp_df["Week"] = start_date
     temp_df.to_excel("SensorIssues.xlsx")
-    temp_df.to_sql("SensorIssueDB.sqlite", conn, if_exists="append")
+    temp_df.to_sql("MetasysSensorIssues", conn, if_exists="append")
 
+    temp_df = temp_df.set_index("Room #").drop("Outside Air", errors='ignore')
+    for insignificant_room in ['Field House NW', "Field House NE", "Field House SW", "Field House SE", "CC Band & Choral ZN1", "CC Entry Hall & Common", "CC Multizone ZN1", "CC Multizone ZN2", "CC Multizone ZN3", "CC Multizone ZN4", "CC Scene Shop", "CC Seating", "CC Stage"]:
+        temp_df = temp_df.drop(insignificant_room, errors='ignore')
+    temp_df = temp_df.where(temp_df["Sensor Issue Type"] != "Temperature").dropna(how='all')
 
-<<<<<<< HEAD
     for j in range(3):
         orig_db = real_orig_db.copy()
         temp_factor = temp_df.head(10)
@@ -1091,6 +1067,3 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
 
 elapsed_time = round((time.time() - start_time) * 1000)/1000
 print('\nElapsed time: {0} seconds'.format(elapsed_time))
-=======
-# TODO: add this to a database
->>>>>>> parent of b6df140... finalizing full metasys script

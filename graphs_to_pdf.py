@@ -1,7 +1,3 @@
-# TODO: MAKE ALL OF THIS ONE SCRIPT!
-
-# check out those wednesdays O-O
-
 # Generates graphs based on user input of which room and issue they would like to see.
 # Maybe this program can be run on each item in the "leaderboard" the Facility requested...
 
@@ -34,6 +30,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
 
     long_text = "Box Plots: Box plots (also known as box-and-whisker plots) are a way of showing data so that you can see both the range and where the middle part of the data lies. The “box” represents the 25th-75th percentile of data, and the orange line in the middle is the median. The “whiskers” extending from the box lead to the minimum and maximum (excluding outliers), and the outliers are represented by dots outside of the structure. For each room in one of the top 5 categories, a box plot is presented showing either its temperature or its carbon dioxide over the time data was collected. \n\nData Collection Methods: The data shown was exported from temperature and CO2 data from Metasys. It was then filtered to include values from only when school was in session (7am to 3pm Monday through Friday). The visualizations do not include rooms with likely sensor issues (those are in a separate Excel file attached with the report).\n\n Thresholds: High CO2 is 1200 ppm, low CO2 (resulting in a sensor issue flag) is the outside air level at the time. High temperature is 75F, low is 65. CO2 sensors are flagged as having issues only if the value is either below the outside air level or always the same. \n\nDates: This data was logged for the week of "
     first_time = datetime.datetime.strftime(datetime.datetime.strptime(real_orig_db["Timestamp"][0], "%Y-%m-%d %H:%M:%S"), "%B %d, %Y")
+    first_time_copy = first_time
     long_text += first_time
     long_text += " to "
     last_time = datetime.datetime.strftime(datetime.datetime.strptime(real_orig_db["Timestamp"][0], "%Y-%m-%d %H:%M:%S") + datetime.timedelta(days=5), "%B %d, %Y")
@@ -43,6 +40,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
     page1 = plt.figure()
     page1.clf()
     page1.text(0.7, 0.03, "Visualizations by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
+    page1.text(0.3, 0.03, "Data logged for week of " + first_time_copy + " to " + last_time, size=4, wrap=True)
     page1.text(0.15, 0.8, "Welcome to the weekly report!", size=20)
     page1.text(0.15, 0.2, long_text, size=8, wrap=True)
 
@@ -91,6 +89,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
             ax.set_ylabel("CO2 (ppm)")
 
         fig.text(0.7, 0.03, "Visualization by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
+        fig.text(0.3, 0.03, "Data logged for week of " + first_time_copy + " to " + last_time, size=4, wrap=True)
         plt.boxplot(i_df_list, vert=True)
         plt.margins(0.2)
         fig.tight_layout()
@@ -176,6 +175,7 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
                     ax.set_xlabel("Time")
 
             fig.text(0.7, 0.03, "Visualization by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
+            fig.text(0.3, 0.03, "Data logged for week of " + first_time_copy + " to " + last_time, size=4, wrap=True)
             fig.suptitle(heading_list[j] + " in room " + room_number + parenthetical_list[j])
             export_pdf.savefig()
             plt.close()
@@ -208,7 +208,48 @@ with PdfPages(r'C:\Users\jadaf\Desktop\buildingEnergyApi\graphs.pdf') as export_
     # TODO: possibly re-sort?
 
     temp_df.to_excel("SensorIssues.xlsx")
-    temp_df.to_sql("SensorIssueDB.sqlite", conn, if_exists="append")
+    temp_df.to_sql("MetasysSensorIssues", conn, if_exists="append")
 
+    temp_df = temp_df.set_index("Room #").drop("Outside Air", errors='ignore')
+    for insignificant_room in ['Field House NW', "Field House NE", "Field House SW", "Field House SE", "CC Band & Choral ZN1", "CC Entry Hall & Common", "CC Multizone ZN1", "CC Multizone ZN2", "CC Multizone ZN3", "CC Multizone ZN4", "CC Scene Shop", "CC Seating", "CC Stage"]:
+        temp_df = temp_df.drop(insignificant_room, errors='ignore')
+    temp_df = temp_df.where(temp_df["Sensor Issue Type"] != "Temperature").dropna(how='all')
+
+    for j in range(3):
+        orig_db = real_orig_db.copy()
+        temp_factor = temp_df.head(10)
+        temp_df = temp_df.iloc[len(temp_factor):]
+        print(temp_factor)
+        if temp_factor.empty:
+            continue
+        temp_factor = temp_factor.T
+        i_df_list = []
+        room_num_list = []
+        for i in temp_factor:
+            i = str(i)
+            tst = orig_db.set_index("Room #")
+            ixd = tst.index
+            i_df = orig_db.set_index("Room #").T[i]
+            i_df_list.append(i_df.T['CO2'])
+            room_num_list.append(i)
+
+        print(i_df_list)
+        page1 = plt.figure()
+        fig, ax = plt.subplots()
+        ax.set_title("CO2 values in rooms w/ sensor issues: #" + str(j*10) + "-" + str(j*10 + len(temp_factor)))
+        #room_num_list.reverse()
+        #i_df_list.reverse()
+        # Reverse both lists...
+        print(room_num_list)
+        ax.set_xticklabels(room_num_list)
+        ax.set_xlabel("Room #")
+        ax.set_ylabel("CO2 (ppm)")
+
+        fig.text(0.7, 0.03, "Visualization by Jade Nair w/ guidance from Kate Connolly", size=4, wrap=True)
+        fig.text(0.3, 0.03, "Data logged for week of " + first_time_copy + " to " + last_time, size=4, wrap=True)
+        plt.boxplot(i_df_list, vert=True)
+        plt.margins(0.2)
+        fig.tight_layout()
+        export_pdf.savefig()
 
 # TODO: add this to a database
