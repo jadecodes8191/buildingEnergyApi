@@ -23,16 +23,19 @@ import sqlite3
 
 # basically, reading column headers to group data
 import sqlalchemy
+outsideAir = False
 
 
-def read_room(x):
-    if "RM" in x:
-        rm = x.split(' ')[0]
+def read_room(x2):
+    global outsideAir
+    if "RM" in x2:
+        rm = x2.split(' ')[0]
         return rm[2:]
-    if x == "Outside Air CO2" or x == "Outside Air RTU1":
+    if "Outside Air" in x2 and "Temp" not in x2 and not outsideAir:
+        outsideAir = True
         return "Outside Air"
     else:
-        return x
+        return x2
 
 
 def is_co2_sensor(x):
@@ -332,8 +335,12 @@ for i in range(0, 5):
         df1 = new_data.where(new_data["Room #"] == "Outside Air").dropna(how='all')
         df1 = df1.where(df1["Timestamp"] == tmstmp).dropna(how='all')
         # print(df1)
-        return df1["CO2"].iloc[0]
+        try:
+            return df1["CO2"].iloc[0]
+        except Exception:
+            return df1["CO2"]
 
+    print(new_data)
     new_data["Min_CO2"] = new_data.apply(find_min_co2, axis=1)
     #print(new_data["Min_CO2"])
     carbon_data = new_data[(new_data.CO2 > co2_max) | (new_data.CO2 < new_data.Min_CO2)][['Timestamp', 'Room #', 'Temperature', 'CO2']].sort_values(by='CO2')
