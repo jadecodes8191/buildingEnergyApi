@@ -332,7 +332,10 @@ for i in range(0, 5):
         df1 = new_data.where(new_data["Room #"] == "Outside Air").dropna(how='all')
         df1 = df1.where(df1["Timestamp"] == tmstmp).dropna(how='all')
         # print(df1)
-        return df1["CO2"].iloc[0]
+        try:
+            return df1["CO2"].iloc[0]
+        except Exception:
+            return df1["CO2"]
 
     new_data["Min_CO2"] = new_data.apply(find_min_co2, axis=1)
     #print(new_data["Min_CO2"])
