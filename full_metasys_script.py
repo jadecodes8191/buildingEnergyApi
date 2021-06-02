@@ -31,8 +31,9 @@ def read_room(x2):
     if "RM" in x2:
         rm = x2.split(' ')[0]
         return rm[2:]
-    if "Outside Air" in x2 and "Temp" not in x2 and not outsideAir:
-        outsideAir = True
+    if x2 == "Outside Air CO2" or ("Outside Air" in x2 and not outsideAir):
+        if not x2 == "Outside Air CO2":
+            outsideAir = True
         return "Outside Air"
     else:
         return x2
